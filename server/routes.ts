@@ -1,0 +1,264 @@
+import type { Express } from "express";
+import { createServer, type Server } from "http";
+import { storage } from "./storage";
+import { setupAuth, isAuthenticated } from "./replitAuth";
+import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import { ObjectPermission } from "./objectAcl";
+import { sendBookingNotificationEmail } from "./emailService";
+import { insertTourSchema, insertBookingSchema, insertTourAvailabilitySchema } from "@shared/schema";
+import { z } from "zod";
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Auth middleware
+  await setupAuth(app);
+
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Object storage routes for protected uploads
+  app.get("/objects/:objectPath(*)", isAuthenticated, async (req, res) => {
+    const userId = req.user?.claims?.sub;
+    const objectStorageService = new ObjectStorageService();
+    try {
+      const objectFile = await objectStorageService.getObjectEntityFile(req.path);
+      const canAccess = await objectStorageService.canAccessObjectEntity({
+        objectFile,
+        userId: userId,
+        requestedPermission: ObjectPermission.READ,
+      });
+      if (!canAccess) {
+        return res.sendStatus(401);
+      }
+      objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error checking object access:", error);
+      if (error instanceof ObjectNotFoundError) {
+        return res.sendStatus(404);
+      }
+      return res.sendStatus(500);
+    }
+  });
+
+  app.post("/api/objects/upload", isAuthenticated, async (req, res) => {
+    const objectStorageService = new ObjectStorageService();
+    const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+    res.json({ uploadURL });
+  });
+
+  app.put("/api/tour-images", isAuthenticated, async (req, res) => {
+    if (!req.body.imageURL) {
+      return res.status(400).json({ error: "imageURL is required" });
+    }
+
+    const userId = req.user?.claims?.sub;
+
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+        req.body.imageURL,
+        {
+          owner: userId,
+          visibility: "public", // Tour images should be publicly accessible
+        },
+      );
+
+      res.status(200).json({ objectPath });
+    } catch (error) {
+      console.error("Error setting tour image:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Tour routes
+  app.get('/api/tours', async (req, res) => {
+    try {
+      const tours = await storage.getTours();
+      res.json(tours);
+    } catch (error) {
+      console.error("Error fetching tours:", error);
+      res.status(500).json({ message: "Failed to fetch tours" });
+    }
+  });
+
+  app.get('/api/tours/:id', async (req, res) => {
+    try {
+      const tour = await storage.getTour(req.params.id);
+      if (!tour) {
+        return res.status(404).json({ message: "Tour not found" });
+      }
+      res.json(tour);
+    } catch (error) {
+      console.error("Error fetching tour:", error);
+      res.status(500).json({ message: "Failed to fetch tour" });
+    }
+  });
+
+  app.post('/api/tours', isAuthenticated, async (req, res) => {
+    try {
+      const tourData = insertTourSchema.parse(req.body);
+      const tour = await storage.createTour(tourData);
+      res.status(201).json(tour);
+    } catch (error) {
+      console.error("Error creating tour:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create tour" });
+    }
+  });
+
+  app.put('/api/tours/:id', isAuthenticated, async (req, res) => {
+    try {
+      const tourData = insertTourSchema.partial().parse(req.body);
+      const tour = await storage.updateTour(req.params.id, tourData);
+      res.json(tour);
+    } catch (error) {
+      console.error("Error updating tour:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update tour" });
+    }
+  });
+
+  app.delete('/api/tours/:id', isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteTour(req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting tour:", error);
+      res.status(500).json({ message: "Failed to delete tour" });
+    }
+  });
+
+  // Tour availability routes
+  app.get('/api/tours/:id/availability', async (req, res) => {
+    try {
+      const { start, end } = req.query;
+      if (!start || !end) {
+        return res.status(400).json({ message: "Start and end dates are required" });
+      }
+      
+      const startDate = new Date(start as string);
+      const endDate = new Date(end as string);
+      
+      const availability = await storage.getTourAvailability(req.params.id, startDate, endDate);
+      res.json(availability);
+    } catch (error) {
+      console.error("Error fetching availability:", error);
+      res.status(500).json({ message: "Failed to fetch availability" });
+    }
+  });
+
+  app.post('/api/tours/:id/availability', isAuthenticated, async (req, res) => {
+    try {
+      const availabilityData = insertTourAvailabilitySchema.parse({
+        ...req.body,
+        tourId: req.params.id,
+      });
+      const availability = await storage.setTourAvailability(availabilityData);
+      res.status(201).json(availability);
+    } catch (error) {
+      console.error("Error setting availability:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to set availability" });
+    }
+  });
+
+  app.delete('/api/availability/:id', isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteTourAvailability(req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting availability:", error);
+      res.status(500).json({ message: "Failed to delete availability" });
+    }
+  });
+
+  // Booking routes
+  app.post('/api/bookings', async (req, res) => {
+    try {
+      const bookingData = insertBookingSchema.parse(req.body);
+      const booking = await storage.createBooking(bookingData);
+      
+      // Get tour details for email
+      const tour = await storage.getTour(bookingData.tourId);
+      if (tour) {
+        // Send email notification to admin
+        const emailSent = await sendBookingNotificationEmail({
+          tourTitle: tour.titleEn, // Use English title for admin
+          tourDate: bookingData.tourDate.toISOString(),
+          numberOfPeople: bookingData.numberOfPeople,
+          phoneNumber: bookingData.phoneNumber,
+          email: bookingData.email || undefined,
+          specialRequests: bookingData.specialRequests || undefined,
+          totalPrice: `${bookingData.totalPriceGel} GEL`,
+          bookingId: booking.id,
+        });
+
+        if (!emailSent) {
+          console.warn("Failed to send booking notification email");
+        }
+      }
+      
+      res.status(201).json(booking);
+    } catch (error) {
+      console.error("Error creating booking:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create booking" });
+    }
+  });
+
+  app.get('/api/bookings', isAuthenticated, async (req, res) => {
+    try {
+      const bookings = await storage.getBookings();
+      res.json(bookings);
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
+      res.status(500).json({ message: "Failed to fetch bookings" });
+    }
+  });
+
+  app.put('/api/bookings/:id/status', isAuthenticated, async (req, res) => {
+    try {
+      const { status } = req.body;
+      if (!status) {
+        return res.status(400).json({ message: "Status is required" });
+      }
+      
+      const booking = await storage.updateBookingStatus(req.params.id, status);
+      res.json(booking);
+    } catch (error) {
+      console.error("Error updating booking status:", error);
+      res.status(500).json({ message: "Failed to update booking status" });
+    }
+  });
+
+  // Exchange rate endpoint (mock implementation - in production would use real API)
+  app.get('/api/exchange-rate', async (req, res) => {
+    try {
+      // Mock exchange rate - in production, fetch from actual API
+      const rate = 0.375; // 1 GEL = 0.375 USD (approximate)
+      res.json({ gelToUsd: rate });
+    } catch (error) {
+      console.error("Error fetching exchange rate:", error);
+      res.status(500).json({ message: "Failed to fetch exchange rate" });
+    }
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
+}
