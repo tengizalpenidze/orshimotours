@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, createContext, useContext } from 'react';
 
 export type Language = 'en' | 'ru' | 'ge';
 
@@ -342,19 +342,50 @@ const translations: Record<Language, Translation> = {
   },
 };
 
+// Create a context for language state
+interface LanguageContextType {
+  currentLanguage: Language;
+  changeLanguage: (language: Language) => void;
+  t: (key: keyof Translation) => string;
+}
+
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+
+// Create a global language state
+let globalLanguageState = {
+  currentLanguage: 'en' as Language,
+  listeners: new Set<() => void>(),
+};
+
+// Initialize from localStorage
+if (typeof window !== 'undefined') {
+  const savedLanguage = localStorage.getItem('language') as Language;
+  if (savedLanguage && ['en', 'ru', 'ge'].includes(savedLanguage)) {
+    globalLanguageState.currentLanguage = savedLanguage;
+  }
+}
+
 export function useLanguage() {
-  const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
+  const [currentLanguage, setCurrentLanguage] = useState<Language>(globalLanguageState.currentLanguage);
 
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('language') as Language;
-    if (savedLanguage && ['en', 'ru', 'ge'].includes(savedLanguage)) {
-      setCurrentLanguage(savedLanguage);
-    }
+    const listener = () => {
+      setCurrentLanguage(globalLanguageState.currentLanguage);
+    };
+    
+    globalLanguageState.listeners.add(listener);
+    
+    return () => {
+      globalLanguageState.listeners.delete(listener);
+    };
   }, []);
 
   const changeLanguage = (language: Language) => {
-    setCurrentLanguage(language);
+    globalLanguageState.currentLanguage = language;
     localStorage.setItem('language', language);
+    
+    // Notify all listeners
+    globalLanguageState.listeners.forEach(listener => listener());
   };
 
   const t = (key: keyof Translation): string => {

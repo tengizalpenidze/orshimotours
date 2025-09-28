@@ -189,6 +189,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Booking routes
   app.post('/api/bookings', async (req, res) => {
     try {
+      // Convert tourDate string to Date object if it's a string
+      if (req.body.tourDate && typeof req.body.tourDate === 'string') {
+        req.body.tourDate = new Date(req.body.tourDate);
+      }
+      
       const bookingData = insertBookingSchema.parse(req.body);
       const booking = await storage.createBooking(bookingData);
       

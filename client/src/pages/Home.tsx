@@ -98,7 +98,8 @@ export default function Home() {
           </p>
           <Button 
             onClick={scrollToTours}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg shadow-lg"
+            size="lg"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg shadow-lg min-h-[44px]"
             data-testid="button-hero-cta"
           >
             {t('hero.cta')}

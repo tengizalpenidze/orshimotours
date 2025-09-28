@@ -1,11 +1,13 @@
 import { MailService } from '@sendgrid/mail';
 
-if (!process.env.SENDGRID_API_KEY) {
-  throw new Error("SENDGRID_API_KEY environment variable must be set");
-}
+let mailService: MailService | null = null;
 
-const mailService = new MailService();
-mailService.setApiKey(process.env.SENDGRID_API_KEY);
+if (process.env.SENDGRID_API_KEY) {
+  mailService = new MailService();
+  mailService.setApiKey(process.env.SENDGRID_API_KEY);
+} else {
+  console.warn("SENDGRID_API_KEY not set - email functionality will be disabled");
+}
 
 interface BookingEmailParams {
   tourTitle: string;
@@ -21,6 +23,11 @@ interface BookingEmailParams {
 export async function sendBookingNotificationEmail(
   params: BookingEmailParams
 ): Promise<boolean> {
+  if (!mailService) {
+    console.warn('Email functionality disabled - SENDGRID_API_KEY not configured');
+    return false;
+  }
+
   try {
     const adminEmail = process.env.ADMIN_EMAIL || 'admin@georgiatours.ge';
     const fromEmail = process.env.FROM_EMAIL || 'noreply@georgiatours.ge';
@@ -59,6 +66,11 @@ export async function sendBookingConfirmationEmail(
   params: BookingEmailParams
 ): Promise<boolean> {
   if (!customerEmail) return true; // Email is optional
+  
+  if (!mailService) {
+    console.warn('Email functionality disabled - SENDGRID_API_KEY not configured');
+    return false;
+  }
 
   try {
     const fromEmail = process.env.FROM_EMAIL || 'noreply@georgiatours.ge';
