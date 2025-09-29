@@ -29,7 +29,7 @@ export async function sendBookingNotificationEmail(
   }
 
   try {
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@orshimotours.ge';
+    const adminEmail = process.env.ADMIN_EMAIL || 'david.alpenidze@gmail.com';
     const fromEmail = process.env.FROM_EMAIL || 'noreply@orshimotours.ge';
 
     const emailContent = `
