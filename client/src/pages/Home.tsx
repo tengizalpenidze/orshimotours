@@ -174,11 +174,11 @@ export default function Home() {
               <div className="space-y-2 text-sm text-muted-foreground">
                 <div className="flex items-center">
                   <Phone className="h-4 w-4 mr-2" />
-                  <span>+995 XXX XXX XXX</span>
+                  <span>+995591818877</span>
                 </div>
                 <div className="flex items-center">
                   <Mail className="h-4 w-4 mr-2" />
-                  <span>info@georgiatours.ge</span>
+                  <span>info@orshimo.ge</span>
                 </div>
                 <div className="flex items-center">
                   <MapPin className="h-4 w-4 mr-2" />
