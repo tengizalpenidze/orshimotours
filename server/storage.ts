@@ -38,6 +38,8 @@ export interface IStorage {
   getBooking(id: string): Promise<Booking | undefined>;
   createBooking(booking: InsertBooking): Promise<Booking>;
   updateBookingStatus(id: string, status: string): Promise<Booking>;
+  updateBooking(id: string, updates: Partial<{ status: string; adminComment: string }>): Promise<Booking>;
+  deleteBooking(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -149,6 +151,19 @@ export class DatabaseStorage implements IStorage {
       .where(eq(bookings.id, id))
       .returning();
     return updated;
+  }
+
+  async updateBooking(id: string, updates: Partial<{ status: string; adminComment: string }>): Promise<Booking> {
+    const [updated] = await db
+      .update(bookings)
+      .set(updates)
+      .where(eq(bookings.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteBooking(id: string): Promise<void> {
+    await db.delete(bookings).where(eq(bookings.id, id));
   }
 }
 

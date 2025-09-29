@@ -163,7 +163,7 @@ const translations: Record<Language, Translation> = {
     'footer.tbilisiCity': 'Tbilisi City',
     'footer.wineTasting': 'Wine Tasting',
     'footer.blackSeaCoast': 'Black Sea Coast',
-    'footer.copyright': '© 2024 Georgia Tours. All rights reserved.',
+    'footer.copyright': '© 2024 Orshimo Tours. All rights reserved.',
     
     // Common
     'common.close': 'Close',
@@ -247,7 +247,7 @@ const translations: Record<Language, Translation> = {
     'footer.tbilisiCity': 'Город Тбилиси',
     'footer.wineTasting': 'Дегустация вин',
     'footer.blackSeaCoast': 'Побережье Черного моря',
-    'footer.copyright': '© 2024 Georgia Tours. Все права защищены.',
+    'footer.copyright': '© 2024 Orshimo Tours. Все права защищены.',
     
     // Common
     'common.close': 'Закрыть',
@@ -331,7 +331,7 @@ const translations: Record<Language, Translation> = {
     'footer.tbilisiCity': 'ქალაქი თბილისი',
     'footer.wineTasting': 'ღვინის დეგუსტაცია',
     'footer.blackSeaCoast': 'შავი ზღვის სანაპირო',
-    'footer.copyright': '© 2024 Georgia Tours. ყველა უფლება დაცულია.',
+    'footer.copyright': '© 2024 Orshimo Tours. ყველა უფლება დაცულია.',
     
     // Common
     'common.close': 'დახურვა',

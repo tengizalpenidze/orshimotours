@@ -1,4 +1,4 @@
-# Replit Configuration for Georgia Tours Application
+# Replit Configuration for Orshimo Tours Application
 
 ## Overview
 

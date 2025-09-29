@@ -29,8 +29,8 @@ export async function sendBookingNotificationEmail(
   }
 
   try {
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@georgiatours.ge';
-    const fromEmail = process.env.FROM_EMAIL || 'noreply@georgiatours.ge';
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@orshimotours.ge';
+    const fromEmail = process.env.FROM_EMAIL || 'noreply@orshimotours.ge';
 
     const emailContent = `
       <h2>New Tour Booking Request</h2>
@@ -73,12 +73,12 @@ export async function sendBookingConfirmationEmail(
   }
 
   try {
-    const fromEmail = process.env.FROM_EMAIL || 'noreply@georgiatours.ge';
+    const fromEmail = process.env.FROM_EMAIL || 'noreply@orshimotours.ge';
 
     const emailContent = `
-      <h2>Booking Confirmation - Georgia Tours</h2>
+      <h2>Booking Confirmation - Orshimo Tours</h2>
       <p>Dear Customer,</p>
-      <p>Thank you for booking with Georgia Tours! Your booking has been confirmed.</p>
+      <p>Thank you for booking with Orshimo Tours! Your booking has been confirmed.</p>
       
       <h3>Booking Details:</h3>
       <p><strong>Booking ID:</strong> ${params.bookingId}</p>
@@ -90,13 +90,13 @@ export async function sendBookingConfirmationEmail(
       <p>Our tour guide will contact you at ${params.phoneNumber} with further details.</p>
       
       <p>We look forward to showing you the beauty of Georgia!</p>
-      <p>Best regards,<br>Georgia Tours Team</p>
+      <p>Best regards,<br>Orshimo Tours Team</p>
     `;
 
     await mailService.send({
       to: customerEmail,
       from: fromEmail,
-      subject: 'Booking Confirmation - Georgia Tours',
+      subject: 'Booking Confirmation - Orshimo Tours',
       html: emailContent,
     });
 

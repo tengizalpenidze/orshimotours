@@ -62,7 +62,7 @@ export default function Home() {
             {/* Logo */}
             <div className="flex items-center space-x-2" data-testid="logo">
               <Mountain className="text-primary text-2xl" />
-              <span className="text-xl font-bold text-foreground">Georgia Tours</span>
+              <span className="text-xl font-bold text-foreground">Orshimo Tours</span>
             </div>
             
             {/* Language & Currency Switcher */}
@@ -157,7 +157,7 @@ export default function Home() {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <Mountain className="text-primary text-xl" />
-                <span className="text-lg font-bold text-foreground">Georgia Tours</span>
+                <span className="text-lg font-bold text-foreground">Orshimo Tours</span>
               </div>
               <p className="text-muted-foreground text-sm leading-relaxed">
                 Discover the authentic beauty of Georgia with our expertly guided tours and unforgettable experiences.

@@ -7,8 +7,10 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { Route, Plus, Users, TrendingUp, Calendar, Edit, Trash2, LogOut } from "lucide-react";
+import { Route, Plus, Users, TrendingUp, Calendar, Edit, Trash2, LogOut, Settings } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
+import { TourEditModal } from "./TourEditModal";
+import { BookingManagementModal } from "./BookingManagementModal";
 import type { Tour, Booking } from "@shared/schema";
 
 export function AdminDashboard() {
@@ -16,6 +18,12 @@ export function AdminDashboard() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const queryClient = useQueryClient();
+  
+  // Modal states
+  const [editingTour, setEditingTour] = useState<Tour | null>(null);
+  const [managingBooking, setManagingBooking] = useState<(Booking & { tour?: Tour }) | null>(null);
+  const [showTourEditModal, setShowTourEditModal] = useState(false);
+  const [showBookingModal, setShowBookingModal] = useState(false);
 
   const { data: tours, isLoading: toursLoading } = useQuery({
     queryKey: ['/api/tours'],
@@ -58,36 +66,6 @@ export function AdminDashboard() {
     },
   });
 
-  const updateBookingStatusMutation = useMutation({
-    mutationFn: async ({ bookingId, status }: { bookingId: string; status: string }) => {
-      return await apiRequest('PUT', `/api/bookings/${bookingId}/status`, { status });
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Booking status updated",
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/bookings'] });
-    },
-    onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
-      toast({
-        title: "Error",
-        description: "Failed to update booking status",
-        variant: "destructive",
-      });
-    },
-  });
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -118,11 +96,26 @@ export function AdminDashboard() {
   };
 
   const handleEditTour = (tourId: string) => {
-    // TODO: Implement edit tour functionality
-    toast({
-      title: "Feature Coming Soon",
-      description: "Tour editing functionality will be available soon.",
-    });
+    const tour = tours?.find((t: Tour) => t.id === tourId);
+    if (tour) {
+      setEditingTour(tour);
+      setShowTourEditModal(true);
+    }
+  };
+
+  const handleManageBooking = (booking: Booking & { tour?: Tour }) => {
+    setManagingBooking(booking);
+    setShowBookingModal(true);
+  };
+
+  const handleCloseTourEdit = () => {
+    setShowTourEditModal(false);
+    setEditingTour(null);
+  };
+
+  const handleCloseBookingModal = () => {
+    setShowBookingModal(false);
+    setManagingBooking(null);
   };
 
   const handleAddTour = () => {
@@ -324,14 +317,19 @@ export function AdminDashboard() {
               <div className="space-y-4" data-testid="list-recent-bookings">
                 {bookings?.slice(0, 10).map((booking: Booking & { tour: Tour }) => (
                   <div key={booking.id} className="flex items-center justify-between p-4 border border-border rounded-lg" data-testid={`card-booking-${booking.id}`}>
-                    <div>
+                    <div className="flex-1">
                       <h4 className="font-medium text-foreground">{booking.tour.titleEn}</h4>
                       <p className="text-sm text-muted-foreground">
                         {new Date(booking.tourDate).toLocaleDateString()} • {booking.numberOfPeople} people
                       </p>
                       <p className="text-sm text-muted-foreground">{booking.phoneNumber}</p>
+                      {booking.adminComment && (
+                        <p className="text-xs text-muted-foreground mt-1 bg-muted p-1 rounded">
+                          Note: {booking.adminComment}
+                        </p>
+                      )}
                     </div>
-                    <div className="text-right">
+                    <div className="text-right mr-4">
                       <p className="font-medium text-foreground">{booking.totalPriceGel} GEL</p>
                       <Badge 
                         variant={booking.status === 'pending' ? "secondary" : booking.status === 'confirmed' ? "default" : "destructive"}
@@ -340,6 +338,17 @@ export function AdminDashboard() {
                         {booking.status}
                       </Badge>
                     </div>
+                    <div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleManageBooking(booking)}
+                        data-testid={`button-manage-booking-${booking.id}`}
+                      >
+                        <Settings className="h-4 w-4 mr-1" />
+                        Manage
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -347,6 +356,19 @@ export function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
+      
+      {/* Modals */}
+      <TourEditModal
+        tour={editingTour}
+        isOpen={showTourEditModal}
+        onClose={handleCloseTourEdit}
+      />
+      
+      <BookingManagementModal
+        booking={managingBooking}
+        isOpen={showBookingModal}
+        onClose={handleCloseBookingModal}
+      />
     </div>
   );
 }

@@ -80,6 +80,7 @@ export const bookings = pgTable("bookings", {
   specialRequests: text("special_requests"),
   totalPriceGel: decimal("total_price_gel", { precision: 10, scale: 2 }).notNull(),
   status: text("status").notNull().default("pending"), // pending, confirmed, cancelled
+  adminComment: text("admin_comment"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

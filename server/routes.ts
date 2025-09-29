@@ -237,18 +237,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/bookings/:id/status', isAuthenticated, async (req, res) => {
+
+  app.put('/api/bookings/:id/update', isAuthenticated, async (req, res) => {
     try {
-      const { status } = req.body;
-      if (!status) {
-        return res.status(400).json({ message: "Status is required" });
-      }
+      const bookingUpdateSchema = z.object({
+        status: z.enum(['pending', 'confirmed', 'cancelled']).optional(),
+        adminComment: z.string().max(1000).optional(),
+      });
       
-      const booking = await storage.updateBookingStatus(req.params.id, status);
+      const updateData = bookingUpdateSchema.parse(req.body);
+      const booking = await storage.updateBooking(req.params.id, updateData);
       res.json(booking);
     } catch (error) {
-      console.error("Error updating booking status:", error);
-      res.status(500).json({ message: "Failed to update booking status" });
+      console.error("Error updating booking:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update booking" });
+    }
+  });
+
+  app.delete('/api/bookings/:id', isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteBooking(req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting booking:", error);
+      res.status(500).json({ message: "Failed to delete booking" });
     }
   });
 
