@@ -30,7 +30,7 @@ export async function sendBookingNotificationEmail(
 
   try {
     const adminEmail = process.env.ADMIN_EMAIL || 'david.alpenidze@gmail.com';
-    const fromEmail = process.env.FROM_EMAIL || 'noreply@orshimotours.ge';
+    const fromEmail = process.env.FROM_EMAIL || 'david.alpenidze@gmail.com';
 
     const emailContent = `
       <h2>New Tour Booking Request</h2>
@@ -91,7 +91,7 @@ export async function sendBookingConfirmationEmail(
   }
 
   try {
-    const fromEmail = process.env.FROM_EMAIL || 'noreply@orshimotours.ge';
+    const fromEmail = process.env.FROM_EMAIL || 'david.alpenidze@gmail.com';
 
     const emailContent = `
       <h2>Booking Confirmation - Orshimo Tours</h2>
