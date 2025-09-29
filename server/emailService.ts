@@ -28,9 +28,10 @@ export async function sendBookingNotificationEmail(
     return false;
   }
 
+  const adminEmail = process.env.ADMIN_EMAIL || 'david.alpenidze@gmail.com';
+  const fromEmail = process.env.FROM_EMAIL || 'david.alpenidze@gmail.com';
+
   try {
-    const adminEmail = process.env.ADMIN_EMAIL || 'david.alpenidze@gmail.com';
-    const fromEmail = process.env.FROM_EMAIL || 'david.alpenidze@gmail.com';
 
     const emailContent = `
       <h2>New Tour Booking Request</h2>
