@@ -113,12 +113,12 @@ export function BookingManagementModal({ booking, isOpen, onClose }: BookingMana
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl" data-testid="modal-booking-management">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col" data-testid="modal-booking-management">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle data-testid="text-booking-management-title">Manage Booking</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="flex-1 overflow-y-auto pr-2 space-y-6">
           {/* Booking Details */}
           <Card>
             <CardHeader>
@@ -245,8 +245,10 @@ export function BookingManagementModal({ booking, isOpen, onClose }: BookingMana
               )}
             </CardContent>
           </Card>
+        </div>
 
-          {/* Action Buttons */}
+        {/* Fixed Action Buttons */}
+        <div className="flex-shrink-0 border-t pt-4 mt-4">
           <div className="flex justify-between">
             <Button
               variant="destructive"
