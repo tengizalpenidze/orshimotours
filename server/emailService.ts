@@ -23,29 +23,13 @@ interface BookingEmailParams {
 export async function sendBookingNotificationEmail(
   params: BookingEmailParams
 ): Promise<boolean> {
-  console.log('🚀 [EMAIL] sendBookingNotificationEmail called with params:', {
-    tourTitle: params.tourTitle,
-    bookingId: params.bookingId,
-    numberOfPeople: params.numberOfPeople,
-    phoneNumber: params.phoneNumber,
-    email: params.email
-  });
-
   if (!mailService) {
-    console.warn('❌ [EMAIL] Email functionality disabled - SENDGRID_API_KEY not configured');
+    console.warn('Email functionality disabled - SENDGRID_API_KEY not configured');
     return false;
   }
 
-  console.log('✅ [EMAIL] SendGrid service is initialized');
-
   const adminEmail = process.env.ADMIN_EMAIL || 'david.alpenidze@gmail.com';
   const fromEmail = process.env.FROM_EMAIL || 'david.alpenidze@gmail.com';
-
-  console.log('📧 [EMAIL] Email configuration:', {
-    to: adminEmail,
-    from: fromEmail,
-    hasApiKey: !!process.env.SENDGRID_API_KEY
-  });
 
   try {
 
@@ -64,34 +48,20 @@ export async function sendBookingNotificationEmail(
       <p>Please contact the customer to confirm or reject this booking.</p>
     `;
 
-    const emailData = {
+    await mailService.send({
       to: adminEmail,
       from: fromEmail,
       subject: `New Tour Booking: ${params.tourTitle}`,
       html: emailContent,
-    };
-
-    console.log('📤 [EMAIL] Attempting to send email via SendGrid...');
-    console.log('📤 [EMAIL] Email data:', emailData);
-
-    const response = await mailService.send(emailData);
-
-    console.log('✅ [EMAIL] SendGrid response:', response);
-    console.log('✅ [EMAIL] Email sent successfully!');
+    });
 
     return true;
   } catch (error: any) {
-    console.error('❌ [EMAIL] SendGrid email error:', error);
-    console.error('❌ [EMAIL] Error details:', {
-      code: error?.code,
-      message: error?.message,
-      response: error?.response?.body,
-      statusCode: error?.response?.statusCode
-    });
+    console.error('SendGrid email error:', error);
     
     // Provide specific guidance for 403 Forbidden errors
     if (error?.code === 403) {
-      console.error('\n🚨 [EMAIL] SendGrid 403 Forbidden Error - Setup Required:');
+      console.error('\n🚨 SendGrid 403 Forbidden Error - Setup Required:');
       console.error('1. Check API Key Permissions:');
       console.error('   - Go to SendGrid Dashboard > Settings > API Keys');
       console.error('   - Edit your API key and set permissions to "Full Access"');
@@ -106,7 +76,6 @@ export async function sendBookingNotificationEmail(
       console.error('   Then restart your application and test again');
     }
     
-    console.error('❌ [EMAIL] Email sending failed, returning false');
     return false;
   }
 }
