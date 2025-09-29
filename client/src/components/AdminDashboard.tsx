@@ -119,11 +119,8 @@ export function AdminDashboard() {
   };
 
   const handleAddTour = () => {
-    // TODO: Implement add tour functionality
-    toast({
-      title: "Feature Coming Soon",
-      description: "Add tour functionality will be available soon.",
-    });
+    setEditingTour(null); // Set to null to indicate creating a new tour
+    setShowTourEditModal(true);
   };
 
   const handleLogout = () => {

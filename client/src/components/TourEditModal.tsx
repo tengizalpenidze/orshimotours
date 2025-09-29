@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -62,22 +62,42 @@ export function TourEditModal({ tour, isOpen, onClose }: TourEditModalProps) {
   });
 
   useEffect(() => {
-    if (tour && isOpen) {
-      form.reset({
-        titleEn: tour.titleEn || "",
-        titleRu: tour.titleRu || "",
-        titleGe: tour.titleGe || "",
-        descriptionEn: tour.descriptionEn || "",
-        descriptionRu: tour.descriptionRu || "",
-        descriptionGe: tour.descriptionGe || "",
-        highlightsEn: Array.isArray(tour.highlightsEn) ? tour.highlightsEn.join("\n") : "",
-        highlightsRu: Array.isArray(tour.highlightsRu) ? tour.highlightsRu.join("\n") : "",
-        highlightsGe: Array.isArray(tour.highlightsGe) ? tour.highlightsGe.join("\n") : "",
-        priceGel: tour.priceGel?.toString() || "",
-        duration: tour.duration || "",
-        maxParticipants: tour.maxParticipants?.toString() || "12",
-      });
-      setNewCoverImage(tour.coverImageUrl || null);
+    if (isOpen) {
+      if (tour) {
+        // Edit mode: populate form with existing tour data
+        form.reset({
+          titleEn: tour.titleEn || "",
+          titleRu: tour.titleRu || "",
+          titleGe: tour.titleGe || "",
+          descriptionEn: tour.descriptionEn || "",
+          descriptionRu: tour.descriptionRu || "",
+          descriptionGe: tour.descriptionGe || "",
+          highlightsEn: Array.isArray(tour.highlightsEn) ? tour.highlightsEn.join("\n") : "",
+          highlightsRu: Array.isArray(tour.highlightsRu) ? tour.highlightsRu.join("\n") : "",
+          highlightsGe: Array.isArray(tour.highlightsGe) ? tour.highlightsGe.join("\n") : "",
+          priceGel: tour.priceGel?.toString() || "",
+          duration: tour.duration || "",
+          maxParticipants: tour.maxParticipants?.toString() || "12",
+        });
+        setNewCoverImage(tour.coverImageUrl || null);
+      } else {
+        // Add mode: reset to empty form
+        form.reset({
+          titleEn: "",
+          titleRu: "",
+          titleGe: "",
+          descriptionEn: "",
+          descriptionRu: "",
+          descriptionGe: "",
+          highlightsEn: "",
+          highlightsRu: "",
+          highlightsGe: "",
+          priceGel: "",
+          duration: "",
+          maxParticipants: "12",
+        });
+        setNewCoverImage(null);
+      }
     }
   }, [tour, isOpen, form]);
 
@@ -97,6 +117,27 @@ export function TourEditModal({ tour, isOpen, onClose }: TourEditModalProps) {
       toast({
         title: "Error",
         description: "Failed to update tour",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const createTourMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest('POST', '/api/tours', data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Tour created successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/tours'] });
+      onClose();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to create tour",
         variant: "destructive",
       });
     },
@@ -129,23 +170,23 @@ export function TourEditModal({ tour, isOpen, onClose }: TourEditModalProps) {
     setUploadingImage(true);
 
     try {
-      // Get upload URL
+      // Get upload URL and object path
       const uploadResponseRaw = await apiRequest('POST', '/api/objects/upload');
       const uploadResponse = await uploadResponseRaw.json();
       
-      if (!uploadResponse || !uploadResponse.uploadURL) {
-        throw new Error('Invalid upload response - missing uploadURL');
+      if (!uploadResponse || !uploadResponse.uploadURL || !uploadResponse.objectPath) {
+        throw new Error('Invalid upload response - missing uploadURL or objectPath');
       }
       
-      const { uploadURL } = uploadResponse;
+      const { uploadURL, objectPath } = uploadResponse;
       
-      // Upload file to object storage
-      const formData = new FormData();
-      formData.append('file', file);
-      
+      // Upload file to object storage directly (PUT request, not FormData)
       const storageResponse = await fetch(uploadURL, {
-        method: 'POST',
-        body: formData,
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
       });
 
       if (!storageResponse.ok) {
@@ -153,16 +194,14 @@ export function TourEditModal({ tour, isOpen, onClose }: TourEditModalProps) {
         throw new Error(`Upload failed with status ${storageResponse.status}`);
       }
 
-      const uploadResult = await storageResponse.json();
-      
-      // Set image as tour image
+      // Set image as tour image (using objectPath from initial response)
       const aclResponseRaw = await apiRequest('PUT', '/api/tour-images', {
-        imageURL: uploadResult.objectPath || uploadResult.url,
+        imageURL: objectPath,
       });
       const aclResponse = await aclResponseRaw.json();
-      const { objectPath } = aclResponse;
+      const { objectPath: publicObjectPath } = aclResponse;
 
-      setNewCoverImage(objectPath);
+      setNewCoverImage(publicObjectPath);
       toast({
         title: "Success",
         description: "Image uploaded successfully",
@@ -181,9 +220,7 @@ export function TourEditModal({ tour, isOpen, onClose }: TourEditModalProps) {
   };
 
   const onSubmit = (data: TourEditForm) => {
-    if (!tour) return;
-
-    const updateData = {
+    const tourData = {
       ...data,
       highlightsEn: data.highlightsEn.split('\n').filter(h => h.trim()),
       highlightsRu: data.highlightsRu.split('\n').filter(h => h.trim()),
@@ -193,16 +230,30 @@ export function TourEditModal({ tour, isOpen, onClose }: TourEditModalProps) {
       coverImageUrl: newCoverImage,
     };
 
-    updateTourMutation.mutate(updateData);
+    if (tour) {
+      // Edit mode: update existing tour
+      updateTourMutation.mutate(tourData);
+    } else {
+      // Add mode: create new tour
+      createTourMutation.mutate(tourData);
+    }
   };
 
-  if (!tour) return null;
+  const isEditMode = !!tour;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" data-testid="modal-tour-edit">
         <DialogHeader>
-          <DialogTitle data-testid="text-edit-tour-title">Edit Tour</DialogTitle>
+          <DialogTitle data-testid="text-edit-tour-title">
+            {isEditMode ? 'Edit Tour' : 'Add New Tour'}
+          </DialogTitle>
+          <DialogDescription data-testid="text-edit-tour-description">
+            {isEditMode 
+              ? 'Update the tour information and settings below.' 
+              : 'Fill in the details to create a new tour experience for your customers.'
+            }
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

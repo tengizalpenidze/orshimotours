@@ -50,8 +50,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/objects/upload", isAuthenticated, async (req, res) => {
     const objectStorageService = new ObjectStorageService();
-    const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-    res.json({ uploadURL });
+    const { uploadURL, objectPath } = await objectStorageService.getObjectEntityUploadURL();
+    res.json({ uploadURL, objectPath });
   });
 
   app.put("/api/tour-images", isAuthenticated, async (req, res) => {
