@@ -11,6 +11,7 @@ import { Route, Plus, Users, TrendingUp, Calendar, Edit, Trash2, LogOut, Setting
 import { useLanguage } from "@/lib/i18n";
 import { TourEditModal } from "./TourEditModal";
 import { BookingManagementModal } from "./BookingManagementModal";
+import { AdminCalendar } from "./AdminCalendar";
 import type { Tour, Booking } from "@shared/schema";
 
 export function AdminDashboard() {
@@ -227,6 +228,11 @@ export function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Tour Availability Calendar */}
+        <div className="mb-8">
+          <AdminCalendar tours={tours || []} />
         </div>
 
         {/* Tours Management */}

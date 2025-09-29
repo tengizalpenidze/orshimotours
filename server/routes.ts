@@ -176,6 +176,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put('/api/availability/:id', isAuthenticated, async (req, res) => {
+    try {
+      const updateData = z.object({
+        isAvailable: z.boolean().optional(),
+        maxBookings: z.number().optional(),
+        currentBookings: z.number().optional(),
+      }).parse(req.body);
+      
+      const availability = await storage.updateTourAvailability(req.params.id, updateData);
+      res.json(availability);
+    } catch (error) {
+      console.error("Error updating availability:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update availability" });
+    }
+  });
+
   app.delete('/api/availability/:id', isAuthenticated, async (req, res) => {
     try {
       await storage.deleteTourAvailability(req.params.id);
