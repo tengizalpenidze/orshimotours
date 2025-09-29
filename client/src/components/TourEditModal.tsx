@@ -130,27 +130,37 @@ export function TourEditModal({ tour, isOpen, onClose }: TourEditModalProps) {
 
     try {
       // Get upload URL
-      const { uploadURL } = await apiRequest('POST', '/api/objects/upload');
+      const uploadResponseRaw = await apiRequest('POST', '/api/objects/upload');
+      const uploadResponse = await uploadResponseRaw.json();
+      
+      if (!uploadResponse || !uploadResponse.uploadURL) {
+        throw new Error('Invalid upload response - missing uploadURL');
+      }
+      
+      const { uploadURL } = uploadResponse;
       
       // Upload file to object storage
       const formData = new FormData();
       formData.append('file', file);
       
-      const uploadResponse = await fetch(uploadURL, {
+      const storageResponse = await fetch(uploadURL, {
         method: 'POST',
         body: formData,
       });
 
-      if (!uploadResponse.ok) {
-        throw new Error('Upload failed');
+      if (!storageResponse.ok) {
+        const errorText = await storageResponse.text();
+        throw new Error(`Upload failed with status ${storageResponse.status}`);
       }
 
-      const uploadResult = await uploadResponse.json();
+      const uploadResult = await storageResponse.json();
       
       // Set image as tour image
-      const { objectPath } = await apiRequest('PUT', '/api/tour-images', {
+      const aclResponseRaw = await apiRequest('PUT', '/api/tour-images', {
         imageURL: uploadResult.objectPath || uploadResult.url,
       });
+      const aclResponse = await aclResponseRaw.json();
+      const { objectPath } = aclResponse;
 
       setNewCoverImage(objectPath);
       toast({
