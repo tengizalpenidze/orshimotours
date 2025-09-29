@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Mountain, Phone, Mail, MapPin, Shield } from "lucide-react";
+import { Mountain, Phone, Mail, MapPin } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { CurrencyToggle, type Currency } from "@/components/CurrencyToggle";
@@ -45,9 +45,6 @@ export default function Home() {
     setShowBookingModal(true);
   };
 
-  const handleAdminLogin = () => {
-    window.location.href = "/api/login";
-  };
 
   const scrollToTours = () => {
     document.getElementById('tours-section')?.scrollIntoView({ behavior: 'smooth' });
@@ -69,18 +66,6 @@ export default function Home() {
             <div className="flex items-center space-x-4">
               <LanguageSwitcher />
               <CurrencyToggle onCurrencyChange={setCurrency} />
-              
-              {/* Admin Login */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleAdminLogin}
-                className="text-muted-foreground hover:text-foreground"
-                data-testid="button-admin-login"
-              >
-                <Shield className="h-4 w-4 mr-1" />
-                {t('nav.admin')}
-              </Button>
             </div>
           </div>
         </div>
