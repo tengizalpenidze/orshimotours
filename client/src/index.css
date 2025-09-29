@@ -111,7 +111,7 @@
 /* Hero background */
 .hero-bg {
   background: linear-gradient(135deg, hsla(142, 35%, 45%, 0.9), hsla(25, 85%, 65%, 0.8)), 
-              url('https://images.unsplash.com/photo-1596422846543-75c6fc197f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080') center/cover;
+              url('/attached_assets/578939_1759121891752.webp') center/cover;
 }
 
 /* Glass effect for modals */
