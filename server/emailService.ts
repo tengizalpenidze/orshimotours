@@ -55,8 +55,26 @@ export async function sendBookingNotificationEmail(
     });
 
     return true;
-  } catch (error) {
+  } catch (error: any) {
     console.error('SendGrid email error:', error);
+    
+    // Provide specific guidance for 403 Forbidden errors
+    if (error?.code === 403) {
+      console.error('\n🚨 SendGrid 403 Forbidden Error - Setup Required:');
+      console.error('1. Check API Key Permissions:');
+      console.error('   - Go to SendGrid Dashboard > Settings > API Keys');
+      console.error('   - Edit your API key and set permissions to "Full Access"');
+      console.error('   - OR ensure "Mail Send" permission is enabled');
+      console.error('');
+      console.error('2. Verify Sender Email:');
+      console.error('   - Go to Settings > Sender Authentication');
+      console.error('   - Complete "Single Sender Verification" for:', fromEmail);
+      console.error('   - OR set up Domain Authentication for your domain');
+      console.error('');
+      console.error('3. Wait a few minutes after making changes for propagation');
+      console.error('   Then restart your application and test again');
+    }
+    
     return false;
   }
 }

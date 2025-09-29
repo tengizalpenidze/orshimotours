@@ -84,15 +84,13 @@ export function BookingModal({ tour, isOpen, onClose, currency, exchangeRate }: 
   };
 
   const calculateTotalPrice = () => {
-    const people = parseInt(formData.numberOfPeople) || 1;
     const priceGel = parseFloat(tour.priceGel);
-    const totalGel = priceGel * people;
     
     if (currency === 'USD') {
-      const totalUsd = Math.round(totalGel * exchangeRate);
+      const totalUsd = Math.round(priceGel * exchangeRate);
       return `$${totalUsd}`;
     }
-    return `${totalGel} GEL`;
+    return `${priceGel} GEL`;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -109,7 +107,7 @@ export function BookingModal({ tour, isOpen, onClose, currency, exchangeRate }: 
 
     const people = parseInt(formData.numberOfPeople);
     const priceGel = parseFloat(tour.priceGel);
-    const totalPriceGel = priceGel * people;
+    const totalPriceGel = priceGel;
 
     bookingMutation.mutate({
       tourId: tour.id,
