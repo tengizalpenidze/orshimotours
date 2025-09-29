@@ -62,7 +62,6 @@ export function TourCard({ tour, currency, exchangeRate, onClick }: TourCardProp
             <span className="text-2xl font-bold text-primary" data-testid={`text-tour-price-${tour.id}`}>
               {formatPrice()}
             </span>
-            <span className="text-xs text-muted-foreground">{t('tours.perPerson')}</span>
           </div>
           <div className="text-right">
             <div className="flex items-center text-muted-foreground mb-1">
