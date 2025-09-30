@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: orshimo-tours
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: ADMIN_EMAIL
+        value: david.alpenidze@gmail.com
+      - key: FROM_EMAIL
+        value: david.alpenidze@gmail.com
+      - key: DEFAULT_OBJECT_STORAGE_BUCKET_ID
+        sync: false
+      - key: PRIVATE_OBJECT_DIR
+        sync: false
+      - key: PUBLIC_OBJECT_SEARCH_PATHS
+        sync: false
+      - key: ISSUER_URL
+        value: https://replit.com/oidc
+      - key: REPLIT_DOMAINS
+        sync: false
+      - key: REPL_ID
+        sync: false
