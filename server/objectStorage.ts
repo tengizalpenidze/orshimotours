@@ -12,23 +12,36 @@ import {
 const REPLIT_SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
 
 // The object storage client is used to interact with the object storage service.
-export const objectStorageClient = new Storage({
-  credentials: {
-    audience: "replit",
-    subject_token_type: "access_token",
-    token_url: `${REPLIT_SIDECAR_ENDPOINT}/token`,
-    type: "external_account",
-    credential_source: {
-      url: `${REPLIT_SIDECAR_ENDPOINT}/credential`,
-      format: {
-        type: "json",
-        subject_token_field_name: "access_token",
-      },
-    },
-    universe_domain: "googleapis.com",
-  },
-  projectId: "",
-});
+// Supports both Replit (sidecar) and external deployments (service account credentials)
+export const objectStorageClient = new Storage(
+  process.env.GOOGLE_PROJECT_ID && process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY
+    ? {
+        // Use service account credentials for external deployments (Render, etc.)
+        projectId: process.env.GOOGLE_PROJECT_ID,
+        credentials: {
+          client_email: process.env.GOOGLE_CLIENT_EMAIL,
+          private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+        },
+      }
+    : {
+        // Use Replit sidecar for Replit deployments
+        credentials: {
+          audience: "replit",
+          subject_token_type: "access_token",
+          token_url: `${REPLIT_SIDECAR_ENDPOINT}/token`,
+          type: "external_account",
+          credential_source: {
+            url: `${REPLIT_SIDECAR_ENDPOINT}/credential`,
+            format: {
+              type: "json",
+              subject_token_field_name: "access_token",
+            },
+          },
+          universe_domain: "googleapis.com",
+        },
+        projectId: "",
+      }
+);
 
 export class ObjectNotFoundError extends Error {
   constructor() {
@@ -188,13 +201,24 @@ export class ObjectStorageService {
   normalizeObjectEntityPath(
     rawPath: string,
   ): string {
-    if (!rawPath.startsWith("https://storage.googleapis.com/")) {
+    if (!rawPath.startsWith("https://storage.googleapis.com/") && 
+        !rawPath.startsWith("https://storage.cloud.google.com/")) {
       return rawPath;
     }
   
     // Extract the path from the URL by removing query parameters and domain
     const url = new URL(rawPath);
-    const rawObjectPath = url.pathname;
+    let rawObjectPath = url.pathname;
+  
+    // For external deployments using DEFAULT_OBJECT_STORAGE_BUCKET_ID,
+    // strip the bucket prefix from the path
+    if (process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID) {
+      const bucketPrefix = `/${process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID}/`;
+      if (rawObjectPath.startsWith(bucketPrefix)) {
+        // Remove bucket prefix, result will start with the object path (e.g., ".private/uploads/...")
+        rawObjectPath = rawObjectPath.slice(bucketPrefix.length);
+      }
+    }
   
     let objectEntityDir = this.getPrivateObjectDir();
     if (!objectEntityDir.endsWith("/")) {
@@ -255,8 +279,20 @@ function parseObjectPath(path: string): {
     throw new Error("Invalid path: must contain at least a bucket name");
   }
 
-  const bucketName = pathParts[1];
-  const objectName = pathParts.slice(2).join("/");
+  let bucketName = pathParts[1];
+  let objectName = pathParts.slice(2).join("/");
+  
+  // For external deployments (Render), use DEFAULT_OBJECT_STORAGE_BUCKET_ID
+  // and prefix the object name with the directory path
+  if (process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID) {
+    const defaultBucket = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
+    // If bucketName is ".private" or "public", use the default bucket
+    // and include the directory in the object path
+    if (bucketName === ".private" || bucketName === "public") {
+      objectName = `${bucketName}/${objectName}`;
+      bucketName = defaultBucket;
+    }
+  }
 
   return {
     bucketName,
@@ -275,29 +311,51 @@ async function signObjectURL({
   method: "GET" | "PUT" | "DELETE" | "HEAD";
   ttlSec: number;
 }): Promise<string> {
-  const request = {
-    bucket_name: bucketName,
-    object_name: objectName,
-    method,
-    expires_at: new Date(Date.now() + ttlSec * 1000).toISOString(),
-  };
-  const response = await fetch(
-    `${REPLIT_SIDECAR_ENDPOINT}/object-storage/signed-object-url`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(request),
-    }
-  );
-  if (!response.ok) {
-    throw new Error(
-      `Failed to sign object URL, errorcode: ${response.status}, ` +
-        `make sure you're running on Replit`
-    );
-  }
+  // Check if using external deployment (service account credentials)
+  const isExternalDeployment = 
+    process.env.GOOGLE_PROJECT_ID && 
+    process.env.GOOGLE_CLIENT_EMAIL && 
+    process.env.GOOGLE_PRIVATE_KEY;
 
-  const { signed_url: signedURL } = await response.json();
-  return signedURL;
+  if (isExternalDeployment) {
+    // Use GCS SDK to generate signed URL for external deployments
+    const file = objectStorageClient.bucket(bucketName).file(objectName);
+    const action = method === 'PUT' ? 'write' : method === 'DELETE' ? 'delete' : 'read';
+    
+    const [signedUrl] = await file.getSignedUrl({
+      version: 'v4',
+      action,
+      expires: Date.now() + ttlSec * 1000,
+      contentType: method === 'PUT' ? 'application/octet-stream' : undefined,
+    });
+    
+    return signedUrl;
+  } else {
+    // Use Replit sidecar for Replit deployments
+    const request = {
+      bucket_name: bucketName,
+      object_name: objectName,
+      method,
+      expires_at: new Date(Date.now() + ttlSec * 1000).toISOString(),
+    };
+    const response = await fetch(
+      `${REPLIT_SIDECAR_ENDPOINT}/object-storage/signed-object-url`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(request),
+      }
+    );
+    if (!response.ok) {
+      throw new Error(
+        `Failed to sign object URL, errorcode: ${response.status}, ` +
+          `make sure you're running on Replit`
+      );
+    }
+
+    const { signed_url: signedURL } = await response.json();
+    return signedURL;
+  }
 }

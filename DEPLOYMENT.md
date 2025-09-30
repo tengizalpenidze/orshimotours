@@ -128,13 +128,112 @@ FROM_EMAIL=david.alpenidze@gmail.com
 NODE_ENV=production
 ```
 
-### Optional (for advanced features)
+### Required for File Uploads (Tour Images)
 
 ```
 DEFAULT_OBJECT_STORAGE_BUCKET_ID=your_gcs_bucket_id
 PRIVATE_OBJECT_DIR=.private
 PUBLIC_OBJECT_SEARCH_PATHS=public
+GOOGLE_PROJECT_ID=your_gcp_project_id
+GOOGLE_CLIENT_EMAIL=your_service_account@project.iam.gserviceaccount.com
+GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYour_key_here\n-----END PRIVATE KEY-----\n"
 ```
+
+---
+
+## ☁️ Google Cloud Storage Setup (REQUIRED)
+
+**Important:** File uploads (tour images) will NOT work without proper GCS configuration.
+
+### Step 1: Create a Google Cloud Project
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Click **"Select a project"** → **"New Project"**
+3. Name it (e.g., "orshimo-tours")
+4. Click **"Create"**
+
+### Step 2: Create a Storage Bucket
+
+1. In Google Cloud Console, go to **Cloud Storage** → **Buckets**
+2. Click **"Create Bucket"**
+3. Configuration:
+   - **Name:** Choose a globally unique name (e.g., `orshimo-tours-uploads`)
+   - **Location:** Choose region closest to your users
+   - **Storage class:** Standard
+   - **Access control:** Fine-grained (recommended)
+   - **Public access:** Do NOT prevent public access (we need public URLs)
+4. Click **"Create"**
+5. Copy the bucket name - this is your `DEFAULT_OBJECT_STORAGE_BUCKET_ID`
+
+### Step 3: Create a Service Account
+
+1. In Google Cloud Console, go to **IAM & Admin** → **Service Accounts**
+2. Click **"Create Service Account"**
+3. Details:
+   - **Name:** `orshimo-tours-storage`
+   - **Description:** "Service account for Orshimo Tours file uploads"
+4. Click **"Create and Continue"**
+5. Grant this role: **"Storage Object Admin"**
+6. Click **"Continue"** → **"Done"**
+
+### Step 4: Create Service Account Key
+
+1. Click on the service account you just created
+2. Go to **"Keys"** tab
+3. Click **"Add Key"** → **"Create new key"**
+4. Choose **JSON** format
+5. Click **"Create"** - this downloads a JSON file
+6. **Keep this file secure!** Never commit it to Git
+
+### Step 5: Extract Credentials from JSON
+
+Open the downloaded JSON file. You'll need these values:
+
+```json
+{
+  "project_id": "your-project-id",           // → GOOGLE_PROJECT_ID
+  "private_key": "-----BEGIN PRIVATE...",    // → GOOGLE_PRIVATE_KEY
+  "client_email": "xxx@xxx.iam.gserviceaccount.com"  // → GOOGLE_CLIENT_EMAIL
+}
+```
+
+### Step 6: Set Environment Variables in Render
+
+Go to your Render web service → **Environment** tab and add:
+
+```
+DEFAULT_OBJECT_STORAGE_BUCKET_ID=your-bucket-name-from-step-2
+GOOGLE_PROJECT_ID=your-project-id-from-json
+GOOGLE_CLIENT_EMAIL=your-client-email-from-json
+GOOGLE_PRIVATE_KEY=your-private-key-from-json
+PRIVATE_OBJECT_DIR=.private
+PUBLIC_OBJECT_SEARCH_PATHS=public
+```
+
+**Important:** For `GOOGLE_PRIVATE_KEY`, paste the entire value including:
+```
+-----BEGIN PRIVATE KEY-----
+...key content...
+-----END PRIVATE KEY-----
+```
+
+### Step 7: Test File Uploads
+
+1. Deploy your app to Render
+2. Log in to admin panel
+3. Try uploading a tour image
+4. If successful, the image URL will be from `storage.googleapis.com`
+
+### Troubleshooting GCS
+
+**Issue:** "Could not load the default credentials"
+**Solution:** Verify all three Google credentials are set correctly in Render
+
+**Issue:** "Access denied to bucket"
+**Solution:** Ensure service account has "Storage Object Admin" role
+
+**Issue:** "Bucket not found"
+**Solution:** Verify `DEFAULT_OBJECT_STORAGE_BUCKET_ID` matches your bucket name exactly
 
 ---
 

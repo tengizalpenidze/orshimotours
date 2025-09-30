@@ -20,12 +20,12 @@ services:
       - key: DEFAULT_OBJECT_STORAGE_BUCKET_ID
         sync: false
       - key: PRIVATE_OBJECT_DIR
-        sync: false
+        value: .private
       - key: PUBLIC_OBJECT_SEARCH_PATHS
+        value: public
+      - key: GOOGLE_PROJECT_ID
         sync: false
-      - key: ISSUER_URL
-        value: https://replit.com/oidc
-      - key: REPLIT_DOMAINS
+      - key: GOOGLE_CLIENT_EMAIL
         sync: false
-      - key: REPL_ID
+      - key: GOOGLE_PRIVATE_KEY
         sync: false
