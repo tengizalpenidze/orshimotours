@@ -265,9 +265,9 @@ PUBLIC_OBJECT_SEARCH_PATHS=public
 ### Build Fails: "vite: not found"
 
 **Issue:** Build fails with `sh: 1: vite: not found`
-**Solution:** This has been fixed! The `render.yaml` uses `npm ci` which installs all dependencies including devDependencies needed for the build. Make sure you push the latest changes to GitHub.
+**Solution:** This has been FIXED! The `render.yaml` now uses `npx` to run vite and esbuild, which automatically finds the locally installed binaries. Make sure you push the latest changes to GitHub.
 
-**Why it happens:** `vite` is in `devDependencies`, but production builds need it. Using `npm ci` ensures all dependencies are installed during the build phase.
+**Why it happens:** `vite` and `esbuild` are installed locally in `node_modules`, but the shell can't find them without the proper PATH. Using `npx` solves this by automatically locating and running locally installed packages.
 
 ### Build Fails: TypeScript Compilation Errors
 
