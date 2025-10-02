@@ -262,10 +262,17 @@ PUBLIC_OBJECT_SEARCH_PATHS=public
 
 ## 🐛 Troubleshooting
 
-### Build Fails
+### Build Fails: "vite: not found"
+
+**Issue:** Build fails with `sh: 1: vite: not found`
+**Solution:** This has been fixed! The `render.yaml` uses `npm ci` which installs all dependencies including devDependencies needed for the build. Make sure you push the latest changes to GitHub.
+
+**Why it happens:** `vite` is in `devDependencies`, but production builds need it. Using `npm ci` ensures all dependencies are installed during the build phase.
+
+### Build Fails: TypeScript Compilation Errors
 
 **Issue:** TypeScript compilation errors
-**Solution:** Ensure all dependencies are in `dependencies` (not just `devDependencies`)
+**Solution:** Check Render logs for specific errors. Ensure your TypeScript code compiles locally first with `npm run build`
 
 ### Database Connection Error
 
