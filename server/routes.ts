@@ -2,19 +2,44 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { handlePasswordLogin, handlePasswordLogout, isPasswordAuthenticated } from "./passwordAuth";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
 import { sendBookingNotificationEmail } from "./emailService";
 import { insertTourSchema, insertBookingSchema, insertTourAvailabilitySchema } from "@shared/schema";
 import { z } from "zod";
 
+// Unified authentication middleware that supports both Replit Auth and password auth
+const unifiedAuth: any = async (req: any, res: any, next: any) => {
+  // Check if using password authentication (session-based)
+  const hasPasswordSession = (req.session as any)?.userId && (req.session as any)?.isAdmin;
+  
+  if (hasPasswordSession) {
+    // Use password authentication
+    return isPasswordAuthenticated(req, res, next);
+  }
+  
+  // Fall back to Replit authentication
+  return isAuthenticated(req, res, next);
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
+  // Password authentication endpoints (for external deployments)
+  app.post('/api/password-login', handlePasswordLogin);
+  app.post('/api/password-logout', handlePasswordLogout);
+
   // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  app.get('/api/auth/user', unifiedAuth, async (req: any, res) => {
     try {
+      // Password auth: user is already attached to request
+      if (req.user && !req.user.claims) {
+        return res.json(req.user);
+      }
+      
+      // Replit auth: get user from claims
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       res.json(user);
@@ -25,8 +50,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Object storage routes for protected uploads
-  app.get("/objects/:objectPath(*)", isAuthenticated, async (req, res) => {
-    const userId = req.user?.claims?.sub;
+  app.get("/objects/:objectPath(*)", unifiedAuth, async (req, res) => {
+    const userId = (req.user as any)?.claims?.sub || (req.user as any)?.id;
     const objectStorageService = new ObjectStorageService();
     try {
       const objectFile = await objectStorageService.getObjectEntityFile(req.path);
@@ -48,18 +73,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/objects/upload", isAuthenticated, async (req, res) => {
+  app.post("/api/objects/upload", unifiedAuth, async (req, res) => {
     const objectStorageService = new ObjectStorageService();
     const { uploadURL, objectPath } = await objectStorageService.getObjectEntityUploadURL();
     res.json({ uploadURL, objectPath });
   });
 
-  app.put("/api/tour-images", isAuthenticated, async (req, res) => {
+  app.put("/api/tour-images", unifiedAuth, async (req, res) => {
     if (!req.body.imageURL) {
       return res.status(400).json({ error: "imageURL is required" });
     }
 
-    const userId = req.user?.claims?.sub;
+    const userId = (req.user as any)?.claims?.sub || (req.user as any)?.id;
 
     try {
       const objectStorageService = new ObjectStorageService();
@@ -102,7 +127,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/tours', isAuthenticated, async (req, res) => {
+  app.post('/api/tours', unifiedAuth, async (req, res) => {
     try {
       const tourData = insertTourSchema.parse(req.body);
       const tour = await storage.createTour(tourData);
@@ -116,7 +141,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/tours/:id', isAuthenticated, async (req, res) => {
+  app.put('/api/tours/:id', unifiedAuth, async (req, res) => {
     try {
       const tourData = insertTourSchema.partial().parse(req.body);
       const tour = await storage.updateTour(req.params.id, tourData);
@@ -130,7 +155,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/tours/:id', isAuthenticated, async (req, res) => {
+  app.delete('/api/tours/:id', unifiedAuth, async (req, res) => {
     try {
       await storage.deleteTour(req.params.id);
       res.status(204).send();
@@ -159,7 +184,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/tours/:id/availability', isAuthenticated, async (req, res) => {
+  app.post('/api/tours/:id/availability', unifiedAuth, async (req, res) => {
     try {
       const availabilityData = insertTourAvailabilitySchema.parse({
         ...req.body,
@@ -176,7 +201,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/availability/:id', isAuthenticated, async (req, res) => {
+  app.put('/api/availability/:id', unifiedAuth, async (req, res) => {
     try {
       const updateData = z.object({
         isAvailable: z.boolean().optional(),
@@ -195,7 +220,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/availability/:id', isAuthenticated, async (req, res) => {
+  app.delete('/api/availability/:id', unifiedAuth, async (req, res) => {
     try {
       await storage.deleteTourAvailability(req.params.id);
       res.status(204).send();
@@ -246,7 +271,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/bookings', isAuthenticated, async (req, res) => {
+  app.get('/api/bookings', unifiedAuth, async (req, res) => {
     try {
       const bookings = await storage.getBookings();
       res.json(bookings);
@@ -257,7 +282,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
 
-  app.put('/api/bookings/:id/update', isAuthenticated, async (req, res) => {
+  app.put('/api/bookings/:id/update', unifiedAuth, async (req, res) => {
     try {
       const bookingUpdateSchema = z.object({
         status: z.enum(['pending', 'confirmed', 'cancelled']).optional(),
@@ -276,7 +301,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/bookings/:id', isAuthenticated, async (req, res) => {
+  app.delete('/api/bookings/:id', unifiedAuth, async (req, res) => {
     try {
       await storage.deleteBooking(req.params.id);
       res.status(204).send();

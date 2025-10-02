@@ -12,7 +12,9 @@ services:
       - key: SENDGRID_API_KEY
         sync: false
       - key: ADMIN_EMAIL
-        value: david.alpenidze@gmail.com
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
       - key: FROM_EMAIL
         value: david.alpenidze@gmail.com
       - key: DEFAULT_OBJECT_STORAGE_BUCKET_ID

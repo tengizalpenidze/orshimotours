@@ -1,10 +1,32 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { createAdminUser } from "./passwordAuth";
+import { storage } from "./storage";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Initialize admin user if credentials are provided
+async function initializeAdminUser() {
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  
+  if (adminEmail && adminPassword) {
+    try {
+      const existingUser = await storage.getUserByEmail(adminEmail);
+      if (!existingUser) {
+        await createAdminUser(adminEmail, adminPassword);
+        log(`Admin user created: ${adminEmail}`);
+      } else {
+        log(`Admin user already exists: ${adminEmail}`);
+      }
+    } catch (error) {
+      console.error("Error initializing admin user:", error);
+    }
+  }
+}
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -37,6 +59,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Initialize admin user if credentials provided
+  await initializeAdminUser();
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
