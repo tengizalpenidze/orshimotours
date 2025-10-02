@@ -69,9 +69,13 @@ Preferred communication style: Simple, everyday language.
 ### Deployment Support (Latest)
 - **Dual-Mode Deployment**: Application now supports both Replit and external platforms (Render, etc.)
 - **Object Storage**: Updated to support both Replit sidecar and direct GCS credentials for file uploads
-- **Authentication Limitation**: Admin features (tour management, bookings view, calendar) only available on Replit due to Replit Auth dependency
-- **Public Features**: Tour browsing, booking system, and email notifications work on all platforms
+- **Dual Authentication**: Supports both Replit Auth (on Replit) and username/password (on external platforms)
+- **Full Admin Access**: Admin panel fully functional on all deployment platforms
 - **Render Configuration**: Complete render.yaml and deployment documentation for Render platform
 
-### Authentication Architecture Note
-The admin panel uses Replit Auth (OpenID Connect) which is only available on Replit infrastructure. External deployments (Render, etc.) have admin features disabled but all customer-facing features remain fully functional. For production use, manage tours via Replit deployment while serving customers via external deployment on same database.
+### Authentication Architecture (Updated)
+The application now supports dual authentication modes:
+- **Replit Auth (OpenID Connect)**: Automatically used on Replit deployments
+- **Username/Password Authentication**: Used on external deployments (Render, etc.)
+
+Both authentication methods provide full admin panel access. The system automatically detects the deployment environment and uses the appropriate authentication method. Admin credentials for external deployments are configured via `ADMIN_EMAIL` and `ADMIN_PASSWORD` environment variables, which auto-create the admin user on first server start.

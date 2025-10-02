@@ -1,24 +1,20 @@
 # Orshimo Tours - Deployment Guide
 
-## ⚠️ Important: Admin Features on Render
+## ✅ Admin Authentication on Render - FIXED!
 
-**Admin panel and authentication are only available on Replit deployments.** 
+**Admin panel now works on Render using username/password authentication!**
 
-On Render (or other external platforms), the following limitations apply:
-- ❌ Admin login is disabled (requires Replit Auth)
-- ❌ Cannot create/edit/delete tours via admin panel
-- ❌ Cannot view bookings
-- ❌ Cannot manage tour availability calendar
+The application now supports TWO authentication methods:
+- **Replit Auth** - Used automatically on Replit deployments
+- **Username/Password** - Used on external deployments (Render, etc.)
 
-**✅ What DOES work on Render:**
-- ✅ Public tour browsing
-- ✅ Tour booking system
-- ✅ Email notifications via SendGrid
-- ✅ File uploads via Google Cloud Storage
-- ✅ Multi-language support (EN/RU/GE)
-- ✅ Currency conversion (GEL/USD)
-
-**Workaround:** Manage tours and availability on your Replit deployment, which shares the same database with Render. Changes made on Replit will be visible on Render immediately.
+**On Render, you can now:**
+- ✅ Login to admin panel with email/password
+- ✅ Create/edit/delete tours
+- ✅ View bookings
+- ✅ Manage tour availability calendar
+- ✅ Upload tour images
+- ✅ All admin features fully functional!
 
 ---
 
@@ -145,10 +141,24 @@ Copy these to Render's Environment Variables section:
 DATABASE_URL=postgresql://user:password@host:5432/database
 SESSION_SECRET=generate_random_string_here
 SENDGRID_API_KEY=your_sendgrid_api_key
-ADMIN_EMAIL=david.alpenidze@gmail.com
 FROM_EMAIL=david.alpenidze@gmail.com
 NODE_ENV=production
 ```
+
+### Admin Authentication (NEW - Required for Render)
+
+For admin panel access on Render, you MUST set these credentials:
+
+```
+ADMIN_EMAIL=your-admin-email@example.com
+ADMIN_PASSWORD=your-secure-password
+```
+
+**Important:** 
+- Choose a strong password (at least 12 characters)
+- The admin user will be auto-created on first server start
+- On Render, login with these credentials at `/admin`
+- On Replit, Replit Auth is used automatically (these credentials are ignored)
 
 ### Required for File Uploads (Tour Images)
 
