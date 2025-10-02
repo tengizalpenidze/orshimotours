@@ -63,3 +63,15 @@ Preferred communication style: Simple, everyday language.
 - **Database Migrations**: Drizzle Kit for schema management
 - **Development Server**: Custom Express setup with Vite middleware integration
 - **Linting**: ESLint integration through Replit plugins
+
+## Recent Changes
+
+### Deployment Support (Latest)
+- **Dual-Mode Deployment**: Application now supports both Replit and external platforms (Render, etc.)
+- **Object Storage**: Updated to support both Replit sidecar and direct GCS credentials for file uploads
+- **Authentication Limitation**: Admin features (tour management, bookings view, calendar) only available on Replit due to Replit Auth dependency
+- **Public Features**: Tour browsing, booking system, and email notifications work on all platforms
+- **Render Configuration**: Complete render.yaml and deployment documentation for Render platform
+
+### Authentication Architecture Note
+The admin panel uses Replit Auth (OpenID Connect) which is only available on Replit infrastructure. External deployments (Render, etc.) have admin features disabled but all customer-facing features remain fully functional. For production use, manage tours via Replit deployment while serving customers via external deployment on same database.

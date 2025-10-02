@@ -1,5 +1,27 @@
 # Orshimo Tours - Deployment Guide
 
+## ⚠️ Important: Admin Features on Render
+
+**Admin panel and authentication are only available on Replit deployments.** 
+
+On Render (or other external platforms), the following limitations apply:
+- ❌ Admin login is disabled (requires Replit Auth)
+- ❌ Cannot create/edit/delete tours via admin panel
+- ❌ Cannot view bookings
+- ❌ Cannot manage tour availability calendar
+
+**✅ What DOES work on Render:**
+- ✅ Public tour browsing
+- ✅ Tour booking system
+- ✅ Email notifications via SendGrid
+- ✅ File uploads via Google Cloud Storage
+- ✅ Multi-language support (EN/RU/GE)
+- ✅ Currency conversion (GEL/USD)
+
+**Workaround:** Manage tours and availability on your Replit deployment, which shares the same database with Render. Changes made on Replit will be visible on Render immediately.
+
+---
+
 ## 📦 Push to GitHub
 
 Since Git operations are restricted in Replit, you'll need to push your code manually. Here's how:
