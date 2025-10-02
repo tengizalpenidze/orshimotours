@@ -28,8 +28,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await setupAuth(app);
 
   // Password authentication endpoints (for external deployments)
-  app.post('/api/password-login', handlePasswordLogin);
-  app.post('/api/password-logout', handlePasswordLogout);
+  app.post('/api/auth/password/login', handlePasswordLogin);
+  app.post('/api/auth/password/logout', handlePasswordLogout);
 
   // Auth routes
   app.get('/api/auth/user', unifiedAuth, async (req: any, res) => {
