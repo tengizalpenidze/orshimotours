@@ -13,32 +13,52 @@ const REPLIT_SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
 
 // Helper function to properly format Google Cloud private key
 function formatPrivateKey(key: string): string {
+  if (!key) {
+    throw new Error("GOOGLE_PRIVATE_KEY is empty or undefined");
+  }
+
   // Handle multiple formats of escaped newlines
-  let formattedKey = key;
+  let formattedKey = key.trim();
+  
+  // Remove quotes if the key is wrapped in quotes
+  if ((formattedKey.startsWith('"') && formattedKey.endsWith('"')) ||
+      (formattedKey.startsWith("'") && formattedKey.endsWith("'"))) {
+    formattedKey = formattedKey.slice(1, -1);
+  }
   
   // Replace literal \n with actual newlines
   formattedKey = formattedKey.replace(/\\n/g, '\n');
   
   // If key doesn't start with the PEM header, it might be base64 encoded
   if (!formattedKey.includes('BEGIN PRIVATE KEY')) {
+    console.log('[GCS] Private key appears to be base64 encoded, attempting to decode...');
     try {
       // Try to decode from base64
       formattedKey = Buffer.from(formattedKey, 'base64').toString('utf-8');
+      console.log('[GCS] Successfully decoded base64 private key');
     } catch (e) {
-      // Not base64, continue with original
+      console.error('[GCS] Failed to decode base64, using original key format');
     }
   }
   
+  // Validate the key has proper PEM format
+  if (!formattedKey.includes('BEGIN PRIVATE KEY') || !formattedKey.includes('END PRIVATE KEY')) {
+    throw new Error("GOOGLE_PRIVATE_KEY is not in valid PEM format. Must contain BEGIN and END PRIVATE KEY markers.");
+  }
+  
   // Ensure proper PEM format with newlines
-  if (formattedKey.includes('BEGIN PRIVATE KEY') && !formattedKey.includes('\n')) {
+  if (!formattedKey.includes('\n')) {
+    console.log('[GCS] Private key is on a single line, reformatting to proper PEM format...');
     // Key is all on one line, need to add newlines
     formattedKey = formattedKey
       .replace(/-----BEGIN PRIVATE KEY-----/g, '-----BEGIN PRIVATE KEY-----\n')
       .replace(/-----END PRIVATE KEY-----/g, '\n-----END PRIVATE KEY-----')
       .replace(/(.{64})/g, '$1\n') // Add newline every 64 chars (standard PEM format)
-      .replace(/\n\n/g, '\n'); // Remove double newlines
+      .replace(/\n+/g, '\n') // Remove multiple consecutive newlines
+      .trim();
   }
   
+  console.log('[GCS] Private key formatted successfully');
   return formattedKey;
 }
 
