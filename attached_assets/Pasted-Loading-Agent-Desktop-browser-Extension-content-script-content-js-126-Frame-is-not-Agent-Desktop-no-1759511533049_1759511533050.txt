@@ -1,0 +1,16 @@
+Loading Agent Desktop browser Extension content script
+content.js:126 Frame is not Agent Desktop, not initializing helper extension
+storage.js:21 Loading Agent Desktop browser Extension content script [storage]. Runtime ID runtime-175951143829242
+index-DfUdWThv.js:275 [UPLOAD] 🚀 Starting file upload process... Object
+index-DfUdWThv.js:275 [UPLOAD] 📡 Step 1: Requesting upload URL from backend...
+index-DfUdWThv.js:275 [UPLOAD] ✅ Step 1 Complete: Received upload parameters Object
+index-DfUdWThv.js:275 [UPLOAD] ⬆️ Step 2: Uploading file to Google Cloud Storage... Object
+admin:1 Access to fetch at 'https://storage.googleapis.com/orshimo-tours-storage-bucker/.private/uploads/644e1a83-b765-44fc-b466-ae1627f7da38?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=orshimo-tours-service-account%40orhimo-tours.iam.gserviceaccount.com%2F20251003%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20251003T171111Z&X-Goog-Expires=900&X-Goog-SignedHeaders=content-type%3Bhost&X-Goog-Signature=86559d41e95bfd0329b5c64c11333bd2815dff03769f86c21806d7300db99c1d7b80cc34a79a38b044099f148671ad578ea777bf1b2f98fe8a0cbb73d302240394ee56a109a0223489c77569508d8275a1be5f6efd0087e197283997a7816eec2991280f4130011a21cfa3602c755bb4a37a24dcc4d5d9528974e81074417e081b8c7874c7428fa6dcd44c6a75064e308619f3c3d3cfee924a82ce940fee1dacaacd07b8008941f579d7b4abbdc5331f33715161bfe8452569dfff2139801ea9b4076b132d3ad8dc95368454e83ee8efbd436e6b46eb17d884de07fbe6c8adc59337cc82622222af5a45c7d70a092a88d3306773efb53e13994289bd62cd6a08' from origin 'https://orshimo-tours.onrender.com' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.Understand this error
+storage.googleapis.com/orshimo-tours-storage-bucker/.private/uploads/644e1a83-b765-44fc-b466-ae1627f7da38?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=orshimo-tours-service-account%40orhimo-tours.iam.gserviceaccount.com%2F20251003%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20251003T171111Z&X-Goog-Expires=900&X-Goog-SignedHeaders=content-type%3Bhost&X-Goog-Signature=86559d41e95bfd0329b5c64c11333bd2815dff03769f86c21806d7300db99c1d7b80cc34a79a38b044099f148671ad578ea777bf1b2f98fe8a0cbb73d302240394ee56a109a0223489c77569508d8275a1be5f6efd0087e197283997a7816eec2991280f4130011a21cfa3602c755bb4a37a24dcc4d5d9528974e81074417e081b8c7874c7428fa6dcd44c6a75064e308619f3c3d3cfee924a82ce940fee1dacaacd07b8008941f579d7b4abbdc5331f33715161bfe8452569dfff2139801ea9b4076b132d3ad8dc95368454e83ee8efbd436e6b46eb17d884de07fbe6c8adc59337cc82622222af5a45c7d70a092a88d3306773efb53e13994289bd62cd6a08:1 
+            
+            
+           Failed to load resource: net::ERR_FAILEDUnderstand this error
+index-DfUdWThv.js:275 [UPLOAD] ❌ Upload failed with error: TypeError: Failed to fetch
+    at p (index-DfUdWThv.js:275:2169)
+p @ index-DfUdWThv.js:275Understand this error
+index-DfUdWThv.js:275 [UPLOAD] Error details: Object
