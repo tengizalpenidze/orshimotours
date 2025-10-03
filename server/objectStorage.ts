@@ -378,7 +378,7 @@ async function signObjectURL({
       version: 'v4',
       action,
       expires: Date.now() + ttlSec * 1000,
-      contentType: method === 'PUT' ? 'application/octet-stream' : undefined,
+      // Don't specify contentType - let browser send the actual file type
     });
     
     return signedUrl;
