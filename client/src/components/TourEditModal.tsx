@@ -147,8 +147,15 @@ export function TourEditModal({ tour, isOpen, onClose }: TourEditModalProps) {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    console.log('[UPLOAD] 🚀 Starting file upload process...', {
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type
+    });
+
     // Validate file type
     if (!file.type.startsWith('image/')) {
+      console.error('[UPLOAD] ❌ Invalid file type:', file.type);
       toast({
         title: "Invalid file",
         description: "Please select an image file",
@@ -159,6 +166,7 @@ export function TourEditModal({ tour, isOpen, onClose }: TourEditModalProps) {
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
+      console.error('[UPLOAD] ❌ File too large:', file.size);
       toast({
         title: "File too large",
         description: "Please select an image smaller than 5MB",
@@ -170,9 +178,16 @@ export function TourEditModal({ tour, isOpen, onClose }: TourEditModalProps) {
     setUploadingImage(true);
 
     try {
-      // Get upload URL and object path
+      // Step 1: Get upload URL and object path
+      console.log('[UPLOAD] 📡 Step 1: Requesting upload URL from backend...');
       const uploadResponseRaw = await apiRequest('POST', '/api/objects/upload');
       const uploadResponse = await uploadResponseRaw.json();
+      
+      console.log('[UPLOAD] ✅ Step 1 Complete: Received upload parameters', {
+        hasUploadURL: !!uploadResponse?.uploadURL,
+        hasObjectPath: !!uploadResponse?.objectPath,
+        objectPath: uploadResponse?.objectPath
+      });
       
       if (!uploadResponse || !uploadResponse.uploadURL || !uploadResponse.objectPath) {
         throw new Error('Invalid upload response - missing uploadURL or objectPath');
@@ -180,7 +195,13 @@ export function TourEditModal({ tour, isOpen, onClose }: TourEditModalProps) {
       
       const { uploadURL, objectPath } = uploadResponse;
       
-      // Upload file to object storage directly (PUT request, not FormData)
+      // Step 2: Upload file to object storage directly (PUT request, not FormData)
+      console.log('[UPLOAD] ⬆️ Step 2: Uploading file to Google Cloud Storage...', {
+        uploadURL: uploadURL.substring(0, 100) + '...',
+        fileSize: file.size,
+        contentType: file.type
+      });
+      
       const storageResponse = await fetch(uploadURL, {
         method: 'PUT',
         body: file,
@@ -189,27 +210,64 @@ export function TourEditModal({ tour, isOpen, onClose }: TourEditModalProps) {
         },
       });
 
+      console.log('[UPLOAD] 📦 Step 2 Response:', {
+        status: storageResponse.status,
+        statusText: storageResponse.statusText,
+        ok: storageResponse.ok
+      });
+
       if (!storageResponse.ok) {
         const errorText = await storageResponse.text();
-        throw new Error(`Upload failed with status ${storageResponse.status}`);
+        console.error('[UPLOAD] ❌ Step 2 Failed: Storage upload error', {
+          status: storageResponse.status,
+          errorText
+        });
+        throw new Error(`Upload failed with status ${storageResponse.status}: ${errorText}`);
       }
 
-      // Set image as tour image (using objectPath from initial response)
+      console.log('[UPLOAD] ✅ Step 2 Complete: File uploaded to GCS successfully');
+
+      // Step 3: Set image as tour image (using objectPath from initial response)
+      console.log('[UPLOAD] 🔐 Step 3: Setting ACL policy to make image public...', {
+        imageURL: objectPath
+      });
+      
       const aclResponseRaw = await apiRequest('PUT', '/api/tour-images', {
         imageURL: objectPath,
       });
+      
+      console.log('[UPLOAD] 📦 Step 3 Response:', {
+        status: aclResponseRaw.status,
+        statusText: aclResponseRaw.statusText,
+        ok: aclResponseRaw.ok
+      });
+      
       const aclResponse = await aclResponseRaw.json();
+      console.log('[UPLOAD] 📄 Step 3 Response Body:', aclResponse);
+      
       const { objectPath: publicObjectPath } = aclResponse;
 
+      console.log('[UPLOAD] ✅ Step 3 Complete: ACL set successfully', {
+        publicObjectPath
+      });
+
       setNewCoverImage(publicObjectPath);
+      console.log('[UPLOAD] 🎉 Upload complete! Image ready to use');
+      
       toast({
         title: "Success",
         description: "Image uploaded successfully",
       });
     } catch (error) {
+      console.error('[UPLOAD] ❌ Upload failed with error:', error);
+      console.error('[UPLOAD] Error details:', {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      
       toast({
         title: "Upload failed",
-        description: "Failed to upload image. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to upload image. Please try again.",
         variant: "destructive",
       });
     } finally {

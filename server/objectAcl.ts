@@ -107,16 +107,39 @@ export async function setObjectAclPolicy(
   objectFile: File,
   aclPolicy: ObjectAclPolicy,
 ): Promise<void> {
+  console.log('[ACL] 🔐 setObjectAclPolicy called', {
+    bucketName: objectFile.bucket.name,
+    fileName: objectFile.name,
+    aclPolicy
+  });
+  
+  console.log('[ACL] 🔍 Checking if object exists...');
   const [exists] = await objectFile.exists();
+  console.log('[ACL] ✅ Object exists check:', { exists });
+  
   if (!exists) {
+    console.error('[ACL] ❌ Object not found:', objectFile.name);
     throw new Error(`Object not found: ${objectFile.name}`);
   }
 
-  await objectFile.setMetadata({
+  console.log('[ACL] 📝 Setting metadata with ACL policy...');
+  const metadataPayload = {
     metadata: {
       [ACL_POLICY_METADATA_KEY]: JSON.stringify(aclPolicy),
     },
-  });
+  };
+  console.log('[ACL] Metadata payload:', JSON.stringify(metadataPayload, null, 2));
+  
+  try {
+    await objectFile.setMetadata(metadataPayload);
+    console.log('[ACL] ✅ Metadata set successfully');
+  } catch (error) {
+    console.error('[ACL] ❌ Failed to set metadata:', error);
+    console.error('[ACL] Error type:', error?.constructor?.name);
+    console.error('[ACL] Error message:', error instanceof Error ? error.message : String(error));
+    console.error('[ACL] Error stack:', error instanceof Error ? error.stack : undefined);
+    throw error;
+  }
 }
 
 // Gets the ACL policy from the object metadata.

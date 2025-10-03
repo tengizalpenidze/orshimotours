@@ -270,13 +270,34 @@ export class ObjectStorageService {
     rawPath: string,
     aclPolicy: ObjectAclPolicy
   ): Promise<string> {
+    console.log('[OBJECT-STORAGE] 🔄 trySetObjectEntityAclPolicy called', {
+      rawPath,
+      aclPolicy
+    });
+    
     const normalizedPath = this.normalizeObjectEntityPath(rawPath);
+    console.log('[OBJECT-STORAGE] 📝 Normalized path:', {
+      rawPath,
+      normalizedPath,
+      startsWithSlash: normalizedPath.startsWith("/")
+    });
+    
     if (!normalizedPath.startsWith("/")) {
+      console.log('[OBJECT-STORAGE] ⏭️ Path does not start with /, returning as-is');
       return normalizedPath;
     }
 
+    console.log('[OBJECT-STORAGE] 📂 Getting object entity file...');
     const objectFile = await this.getObjectEntityFile(normalizedPath);
+    console.log('[OBJECT-STORAGE] ✅ Object file retrieved:', {
+      bucket: objectFile.bucket.name,
+      fileName: objectFile.name
+    });
+    
+    console.log('[OBJECT-STORAGE] 🔐 Setting ACL policy on object...');
     await setObjectAclPolicy(objectFile, aclPolicy);
+    console.log('[OBJECT-STORAGE] ✅ ACL policy set successfully');
+    
     return normalizedPath;
   }
 

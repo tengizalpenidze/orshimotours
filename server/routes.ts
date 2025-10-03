@@ -74,20 +74,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/objects/upload", unifiedAuth, async (req, res) => {
-    const objectStorageService = new ObjectStorageService();
-    const { uploadURL, objectPath } = await objectStorageService.getObjectEntityUploadURL();
-    res.json({ uploadURL, objectPath });
+    try {
+      console.log('[BACKEND-UPLOAD] 📡 Received upload URL request');
+      const objectStorageService = new ObjectStorageService();
+      const { uploadURL, objectPath } = await objectStorageService.getObjectEntityUploadURL();
+      
+      console.log('[BACKEND-UPLOAD] ✅ Generated upload URL', {
+        objectPath,
+        uploadURLPrefix: uploadURL.substring(0, 100) + '...',
+        hasSignature: uploadURL.includes('X-Goog-Signature')
+      });
+      
+      res.json({ uploadURL, objectPath });
+    } catch (error) {
+      console.error('[BACKEND-UPLOAD] ❌ Failed to generate upload URL:', error);
+      console.error('[BACKEND-UPLOAD] Error stack:', error instanceof Error ? error.stack : undefined);
+      res.status(500).json({ error: 'Failed to generate upload URL' });
+    }
   });
 
   app.put("/api/tour-images", unifiedAuth, async (req, res) => {
+    console.log('[BACKEND-ACL] 🔐 Received ACL update request', {
+      imageURL: req.body.imageURL,
+      hasImageURL: !!req.body.imageURL
+    });
+    
     if (!req.body.imageURL) {
+      console.error('[BACKEND-ACL] ❌ Missing imageURL in request body');
       return res.status(400).json({ error: "imageURL is required" });
     }
 
     const userId = (req.user as any)?.claims?.sub || (req.user as any)?.id;
+    console.log('[BACKEND-ACL] 👤 User ID:', userId);
 
     try {
       const objectStorageService = new ObjectStorageService();
+      
+      console.log('[BACKEND-ACL] 🔄 Attempting to set ACL policy...', {
+        imageURL: req.body.imageURL,
+        owner: userId,
+        visibility: 'public'
+      });
+      
       const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
         req.body.imageURL,
         {
@@ -96,10 +124,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
       );
 
+      console.log('[BACKEND-ACL] ✅ ACL policy set successfully', {
+        objectPath
+      });
+
       res.status(200).json({ objectPath });
     } catch (error) {
-      console.error("Error setting tour image:", error);
-      res.status(500).json({ error: "Internal server error" });
+      console.error('[BACKEND-ACL] ❌ Error setting tour image ACL:', error);
+      console.error('[BACKEND-ACL] Error type:', error?.constructor?.name);
+      console.error('[BACKEND-ACL] Error message:', error instanceof Error ? error.message : String(error));
+      console.error('[BACKEND-ACL] Error stack:', error instanceof Error ? error.stack : undefined);
+      
+      res.status(500).json({ 
+        error: "Failed to set image ACL",
+        details: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 
