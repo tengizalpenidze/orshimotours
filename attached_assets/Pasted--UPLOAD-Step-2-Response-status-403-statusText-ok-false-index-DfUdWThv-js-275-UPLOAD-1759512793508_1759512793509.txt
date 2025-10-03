@@ -1,0 +1,27 @@
+[UPLOAD] 📦 Step 2 Response: 
+{status: 403, statusText: '', ok: false}
+index-DfUdWThv.js:275 [UPLOAD] ❌ Step 2 Failed: Storage upload error 
+{status: 403, errorText: "<?xml version='1.0' encoding='UTF-8'?><Error><Code…;host\nUNSIGNED-PAYLOAD</CanonicalRequest></Error>"}
+index-DfUdWThv.js:275 [UPLOAD] ❌ Upload failed with error: Error: Upload failed with status 403: <?xml version='1.0' encoding='UTF-8'?><Error><Code>SignatureDoesNotMatch</Code><Message>Access denied.</Message><Details>The request signature we calculated does not match the signature you provided. Check your Google secret key and signing method.</Details><StringToSign>GOOG4-RSA-SHA256
+20251003T173249Z
+20251003/auto/storage/goog4_request
+be4ee605f43c6b27e68734c52e58ace9df56d031d7ece342e522c43d18cbd856</StringToSign><CanonicalRequest>PUT
+/orshimo-tours-storage-bucker/.private/uploads/773d907a-94ee-41af-a372-cfdaebb4a1fb
+X-Goog-Algorithm=GOOG4-RSA-SHA256&amp;X-Goog-Credential=orshimo-tours-service-account%40orhimo-tours.iam.gserviceaccount.com%2F20251003%2Fauto%2Fstorage%2Fgoog4_request&amp;X-Goog-Date=20251003T173249Z&amp;X-Goog-Expires=900&amp;X-Goog-SignedHeaders=content-type%3Bhost
+content-type:image/webp
+host:storage.googleapis.com
+
+content-type;host
+UNSIGNED-PAYLOAD</CanonicalRequest></Error>
+    at p (index-DfUdWThv.js:275:2459)
+index-DfUdWThv.js:275 [UPLOAD] Error details: 
+{message: "Upload failed with status 403: <?xml version='1.0'…;host\nUNSIGNED-PAYLOAD</CanonicalRequest></Error>", stack: 'Error: Upload failed with status 403: <?xml versio…s.onrender.com/assets/index-DfUdWThv.js:275:2459)'}
+message
+: 
+"Upload failed with status 403: <?xml version='1.0' encoding='UTF-8'?><Error><Code>SignatureDoesNotMatch</Code><Message>Access denied.</Message><Details>The request signature we calculated does not match the signature you provided. Check your Google secret key and signing method.</Details><StringToSign>GOOG4-RSA-SHA256\n20251003T173249Z\n20251003/auto/storage/goog4_request\nbe4ee605f43c6b27e68734c52e58ace9df56d031d7ece342e522c43d18cbd856</StringToSign><CanonicalRequest>PUT\n/orshimo-tours-storage-bucker/.private/uploads/773d907a-94ee-41af-a372-cfdaebb4a1fb\nX-Goog-Algorithm=GOOG4-RSA-SHA256&amp;X-Goog-Credential=orshimo-tours-service-account%40orhimo-tours.iam.gserviceaccount.com%2F20251003%2Fauto%2Fstorage%2Fgoog4_request&amp;X-Goog-Date=20251003T173249Z&amp;X-Goog-Expires=900&amp;X-Goog-SignedHeaders=content-type%3Bhost\ncontent-type:image/webp\nhost:storage.googleapis.com\n\ncontent-type;host\nUNSIGNED-PAYLOAD</CanonicalRequest></Error>"
+stack
+: 
+"Error: Upload failed with status 403: <?xml version='1.0' encoding='UTF-8'?><Error><Code>SignatureDoesNotMatch</Code><Message>Access denied.</Message><Details>The request signature we calculated does not match the signature you provided. Check your Google secret key and signing method.</Details><StringToSign>GOOG4-RSA-SHA256\n20251003T173249Z\n20251003/auto/storage/goog4_request\nbe4ee605f43c6b27e68734c52e58ace9df56d031d7ece342e522c43d18cbd856</StringToSign><CanonicalRequest>PUT\n/orshimo-tours-storage-bucker/.private/uploads/773d907a-94ee-41af-a372-cfdaebb4a1fb\nX-Goog-Algorithm=GOOG4-RSA-SHA256&amp;X-Goog-Credential=orshimo-tours-service-account%40orhimo-tours.iam.gserviceaccount.com%2F20251003%2Fauto%2Fstorage%2Fgoog4_request&amp;X-Goog-Date=20251003T173249Z&amp;X-Goog-Expires=900&amp;X-Goog-SignedHeaders=content-type%3Bhost\ncontent-type:image/webp\nhost:storage.googleapis.com\n\ncontent-type;host\nUNSIGNED-PAYLOAD</CanonicalRequest></Error>\n    at p (https://orshimo-tours.onrender.com/assets/index-DfUdWThv.js:275:2459)"
+[[Prototype]]
+: 
+Object
