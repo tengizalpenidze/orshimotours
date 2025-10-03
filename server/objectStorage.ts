@@ -11,6 +11,37 @@ import {
 
 const REPLIT_SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
 
+// Helper function to properly format Google Cloud private key
+function formatPrivateKey(key: string): string {
+  // Handle multiple formats of escaped newlines
+  let formattedKey = key;
+  
+  // Replace literal \n with actual newlines
+  formattedKey = formattedKey.replace(/\\n/g, '\n');
+  
+  // If key doesn't start with the PEM header, it might be base64 encoded
+  if (!formattedKey.includes('BEGIN PRIVATE KEY')) {
+    try {
+      // Try to decode from base64
+      formattedKey = Buffer.from(formattedKey, 'base64').toString('utf-8');
+    } catch (e) {
+      // Not base64, continue with original
+    }
+  }
+  
+  // Ensure proper PEM format with newlines
+  if (formattedKey.includes('BEGIN PRIVATE KEY') && !formattedKey.includes('\n')) {
+    // Key is all on one line, need to add newlines
+    formattedKey = formattedKey
+      .replace(/-----BEGIN PRIVATE KEY-----/g, '-----BEGIN PRIVATE KEY-----\n')
+      .replace(/-----END PRIVATE KEY-----/g, '\n-----END PRIVATE KEY-----')
+      .replace(/(.{64})/g, '$1\n') // Add newline every 64 chars (standard PEM format)
+      .replace(/\n\n/g, '\n'); // Remove double newlines
+  }
+  
+  return formattedKey;
+}
+
 // The object storage client is used to interact with the object storage service.
 // Supports both Replit (sidecar) and external deployments (service account credentials)
 export const objectStorageClient = new Storage(
@@ -20,7 +51,7 @@ export const objectStorageClient = new Storage(
         projectId: process.env.GOOGLE_PROJECT_ID,
         credentials: {
           client_email: process.env.GOOGLE_CLIENT_EMAIL,
-          private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+          private_key: formatPrivateKey(process.env.GOOGLE_PRIVATE_KEY),
         },
       }
     : {
