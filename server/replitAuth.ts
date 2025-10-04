@@ -34,16 +34,26 @@ export function getSession() {
     ttl: sessionTtl,
     tableName: "sessions",
   });
+  // Determine cookie domain based on deployment
+  const cookieSettings: any = {
+    httpOnly: true,
+    secure: true,
+    maxAge: sessionTtl,
+  };
+
+  // For custom domain, set domain to allow cookies across subdomains
+  // Check if we're on a custom domain (not Render)
+  const customDomain = process.env.CUSTOM_DOMAIN; // e.g., "orshimo.com"
+  if (customDomain) {
+    cookieSettings.domain = `.${customDomain}`; // .orshimo.com works for both orshimo.com and www.orshimo.com
+  }
+
   return session({
     secret: process.env.SESSION_SECRET!,
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure: true,
-      maxAge: sessionTtl,
-    },
+    cookie: cookieSettings,
   });
 }
 
