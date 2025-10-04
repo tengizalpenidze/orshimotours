@@ -1,0 +1,61 @@
+index-DfUdWThv.js:48 
+            
+            
+           GET https://www.orshimo.com/api/auth/user 403 (Forbidden)
+(anonymous) @ index-DfUdWThv.js:48
+o @ index-DfUdWThv.js:48
+b @ index-DfUdWThv.js:48
+start @ index-DfUdWThv.js:48
+fetch @ index-DfUdWThv.js:48
+$i @ index-DfUdWThv.js:48
+onSubscribe @ index-DfUdWThv.js:48
+subscribe @ index-DfUdWThv.js:48
+(anonymous) @ index-DfUdWThv.js:48
+Jy @ index-DfUdWThv.js:38
+Ju @ index-DfUdWThv.js:40
+Po @ index-DfUdWThv.js:40
+Jm @ index-DfUdWThv.js:40
+fs @ index-DfUdWThv.js:38
+a_ @ index-DfUdWThv.js:40
+vs @ index-DfUdWThv.js:40
+Rx @ index-DfUdWThv.js:40
+k @ index-DfUdWThv.js:25
+P @ index-DfUdWThv.js:25Understand this error
+index-DfUdWThv.js:275 [UPLOAD] 🚀 Starting file upload process... {fileName: 'kakheti.jpg', fileSize: 116185, fileType: 'image/jpeg'}
+index-DfUdWThv.js:275 [UPLOAD] 📡 Step 1: Requesting upload URL from backend...
+index-DfUdWThv.js:275 [UPLOAD] ✅ Step 1 Complete: Received upload parameters {hasUploadURL: true, hasObjectPath: true, objectPath: '/objects/uploads/6f424d39-f993-4a26-b3b2-454677f906b8'}
+index-DfUdWThv.js:275 [UPLOAD] ⬆️ Step 2: Uploading file to Google Cloud Storage... {uploadURL: 'https://storage.googleapis.com/orshimo-tours-stora…ucker/.private/uploads/6f424d39-f993-4a26-b3b2...', fileSize: 116185, contentType: 'image/jpeg'}
+/admin:1 Access to fetch at 'https://storage.googleapis.com/orshimo-tours-storage-bucker/.private/uploads/6f424d39-f993-4a26-b3b2-454677f906b8?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=orshimo-tours-service-account%40orhimo-tours.iam.gserviceaccount.com%2F20251004%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20251004T192049Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=130dab9e7d57245c8aa8568fcaa137e2c60015df33297a52cabf538e02cdde12bc071679d61a154735ce91af2590e388fc9414f3932cc0f4f7205b990f17328c33f74b3b9491a3d3341dd56bcc2a92fea2fde7bdcd1efa843190326361700e9c9c939df96737bb7a1032ffdffcbccf002f4166f57f559ed83c486405f78ae52381adbbd47384a51cba5f72b4749a5df923c00674a4684cf432155d83fd648028cff49c4d9787d5c1cfa642dfc9579fe32cd6ad14db76e2b5b4635d31eb7c0ba87b46e5a4ad67856b4b2b63fceacc804ba206b4974c07cbc4e679578dcbd12750cc620b422f16f7d9c33fa777d0d35f23c4030cb91dbf80d6e8a7a44d1842f418' from origin 'https://www.orshimo.com' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.Understand this error
+index-DfUdWThv.js:275 
+            
+            
+           PUT https://storage.googleapis.com/orshimo-tours-storage-bucker/.private/uploads/6f424d39-f993-4a26-b3b2-454677f906b8?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=orshimo-tours-service-account%40orhimo-tours.iam.gserviceaccount.com%2F20251004%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20251004T192049Z&X-Goog-Expires=900&X-Goog-SignedHeaders=host&X-Goog-Signature=130dab9e7d57245c8aa8568fcaa137e2c60015df33297a52cabf538e02cdde12bc071679d61a154735ce91af2590e388fc9414f3932cc0f4f7205b990f17328c33f74b3b9491a3d3341dd56bcc2a92fea2fde7bdcd1efa843190326361700e9c9c939df96737bb7a1032ffdffcbccf002f4166f57f559ed83c486405f78ae52381adbbd47384a51cba5f72b4749a5df923c00674a4684cf432155d83fd648028cff49c4d9787d5c1cfa642dfc9579fe32cd6ad14db76e2b5b4635d31eb7c0ba87b46e5a4ad67856b4b2b63fceacc804ba206b4974c07cbc4e679578dcbd12750cc620b422f16f7d9c33fa777d0d35f23c4030cb91dbf80d6e8a7a44d1842f418 net::ERR_FAILED
+p @ index-DfUdWThv.js:275
+await in p
+ES @ index-DfUdWThv.js:37
+TS @ index-DfUdWThv.js:37
+PS @ index-DfUdWThv.js:37
+km @ index-DfUdWThv.js:37
+Iy @ index-DfUdWThv.js:37
+(anonymous) @ index-DfUdWThv.js:37
+Bh @ index-DfUdWThv.js:40
+ay @ index-DfUdWThv.js:37
+qc @ index-DfUdWThv.js:37
+yh @ index-DfUdWThv.js:37
+HS @ index-DfUdWThv.js:37Understand this error
+index-DfUdWThv.js:275 [UPLOAD] ❌ Upload failed with error: TypeError: Failed to fetch
+    at p (index-DfUdWThv.js:275:2169)
+p @ index-DfUdWThv.js:275
+await in p
+ES @ index-DfUdWThv.js:37
+TS @ index-DfUdWThv.js:37
+PS @ index-DfUdWThv.js:37
+km @ index-DfUdWThv.js:37
+Iy @ index-DfUdWThv.js:37
+(anonymous) @ index-DfUdWThv.js:37
+Bh @ index-DfUdWThv.js:40
+ay @ index-DfUdWThv.js:37
+qc @ index-DfUdWThv.js:37
+yh @ index-DfUdWThv.js:37
+HS @ index-DfUdWThv.js:37Understand this error
+index-DfUdWThv.js:275 [UPLOAD] Error details: {message: 'Failed to fetch', stack: 'TypeError: Failed to fetch\n    at p (https://www.orshimo.com/assets/index-DfUdWThv.js:275:2169)'}
