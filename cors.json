@@ -1,6 +1,6 @@
 [
   {
-    "origin": ["https://orshimo-tours.onrender.com"],
+    "origin": ["https://orshimo-tours.onrender.com", "https://orshimo.com", "https://www.orshimo.com"],
     "method": ["GET", "PUT", "POST", "OPTIONS"],
     "responseHeader": ["Content-Type", "Content-Length"],
     "maxAgeSeconds": 3600
