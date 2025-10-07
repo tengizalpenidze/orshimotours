@@ -28,8 +28,8 @@ export async function sendBookingNotificationEmail(
     return false;
   }
 
-  const adminEmail = process.env.ADMIN_EMAIL || 'david.alpenidze@gmail.com';
-  const fromEmail = process.env.FROM_EMAIL || 'david.alpenidze@gmail.com';
+  const adminEmail = process.env.ADMIN_EMAIL || 'info@orshimo.com';
+  const fromEmail = process.env.FROM_EMAIL || 'info@orshimo.com';
 
   try {
 
@@ -92,7 +92,7 @@ export async function sendBookingConfirmationEmail(
   }
 
   try {
-    const fromEmail = process.env.FROM_EMAIL || 'david.alpenidze@gmail.com';
+    const fromEmail = process.env.FROM_EMAIL || 'info@orshimo.com';
 
     const emailContent = `
       <h2>Booking Confirmation - Orshimo Tours</h2>
