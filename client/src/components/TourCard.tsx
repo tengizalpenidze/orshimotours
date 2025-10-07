@@ -54,7 +54,7 @@ export function TourCard({ tour, currency, exchangeRate, onClick }: TourCardProp
         <h3 className="text-xl font-semibold mb-2 text-foreground" data-testid={`text-tour-title-${tour.id}`}>
           {getLocalizedContent('title')}
         </h3>
-        <p className="text-muted-foreground mb-4 text-sm leading-relaxed" data-testid={`text-tour-description-${tour.id}`}>
+        <p className="text-muted-foreground mb-4 text-sm leading-relaxed line-clamp-5" data-testid={`text-tour-description-${tour.id}`}>
           {getLocalizedContent('description')}
         </p>
         <div className="flex justify-between items-center">

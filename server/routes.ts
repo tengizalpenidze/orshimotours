@@ -23,6 +23,7 @@ const unifiedAuth: any = async (req: any, res: any, next: any) => {
   return isAuthenticated(req, res, next);
 };
 
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
@@ -49,8 +50,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Object storage routes - public objects don't require auth
-  app.get("/objects/:objectPath(*)", async (req, res) => {
+  // Object storage routes - public objects don't require auth, private objects do
+  app.get("/objects/:objectPath(*)", async (req: any, res, next) => {
     const objectStorageService = new ObjectStorageService();
     try {
       const objectFile = await objectStorageService.getObjectEntityFile(req.path);
@@ -63,8 +64,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return objectStorageService.downloadObject(objectFile, res);
       }
       
-      // For private objects, require authentication
-      const userId = (req.user as any)?.claims?.sub || (req.user as any)?.id;
+      // For private objects, get userId from either password session or Replit auth
+      let userId: string | undefined;
+      
+      // Try password auth session first
+      if (req.session?.userId && req.session?.isAdmin) {
+        userId = req.session.userId;
+      }
+      // Try Replit auth (req.user populated by passport.session())
+      else if (req.user?.claims?.sub) {
+        userId = req.user.claims.sub;
+      }
+      // Try direct user object (password auth)
+      else if (req.user?.id) {
+        userId = req.user.id;
+      }
+      
       const canAccess = await objectStorageService.canAccessObjectEntity({
         objectFile,
         userId: userId,
