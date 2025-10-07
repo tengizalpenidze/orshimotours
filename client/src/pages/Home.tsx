@@ -178,7 +178,7 @@ export default function Home() {
                 </div>
                 <div className="flex items-center">
                   <Mail className="h-4 w-4 mr-2" />
-                  <span>info@orshimo.ge</span>
+                  <span>info@orshimo.com</span>
                 </div>
                 <div className="flex items-center">
                   <MapPin className="h-4 w-4 mr-2" />
