@@ -49,20 +49,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Object storage routes for protected uploads
-  app.get("/objects/:objectPath(*)", unifiedAuth, async (req, res) => {
-    const userId = (req.user as any)?.claims?.sub || (req.user as any)?.id;
+  // Object storage routes - public objects don't require auth
+  app.get("/objects/:objectPath(*)", async (req, res) => {
     const objectStorageService = new ObjectStorageService();
     try {
       const objectFile = await objectStorageService.getObjectEntityFile(req.path);
+      
+      // Check if object is public or private
+      const aclPolicy = await objectStorageService.getObjectAclPolicy(objectFile);
+      
+      // If object is public, allow anyone to access
+      if (aclPolicy?.visibility === "public") {
+        return objectStorageService.downloadObject(objectFile, res);
+      }
+      
+      // For private objects, require authentication
+      const userId = (req.user as any)?.claims?.sub || (req.user as any)?.id;
       const canAccess = await objectStorageService.canAccessObjectEntity({
         objectFile,
         userId: userId,
         requestedPermission: ObjectPermission.READ,
       });
+      
       if (!canAccess) {
         return res.sendStatus(401);
       }
+      
       objectStorageService.downloadObject(objectFile, res);
     } catch (error) {
       console.error("Error checking object access:", error);

@@ -301,6 +301,11 @@ export class ObjectStorageService {
     return normalizedPath;
   }
 
+  // Gets the ACL policy for an object.
+  async getObjectAclPolicy(objectFile: File): Promise<ObjectAclPolicy | null> {
+    return getObjectAclPolicy(objectFile);
+  }
+
   // Checks if the user can access the object entity.
   async canAccessObjectEntity({
     userId,
