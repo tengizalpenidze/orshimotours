@@ -116,6 +116,8 @@ export const insertTourSchema = createInsertSchema(tours).omit({
 export const insertTourAvailabilitySchema = createInsertSchema(tourAvailability).omit({
   id: true,
   createdAt: true,
+}).extend({
+  date: z.coerce.date(),
 });
 
 export const insertBookingSchema = createInsertSchema(bookings).omit({
