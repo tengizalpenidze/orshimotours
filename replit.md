@@ -66,7 +66,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### Deployment Support (Latest)
+### Hero Slideshow & Email Updates (Latest)
+- **Hero Section Slideshow**: Implemented automatic background slideshow featuring tour cover images
+  - Auto-advances every 3 seconds with smooth opacity transitions
+  - Images are blurred (4px blur) to ensure text readability
+  - Fills the entire hero section with object-cover and slight zoom
+  - Stops on last image (doesn't loop)
+  - Uses Tailwind classes for transitions and data attributes for testing
+- **Email Configuration**: Updated all booking notification emails to use info@orshimo.com (from david.alpenidze@gmail.com)
+- **Date Validation**: Fixed admin date blocking with proper z.coerce.date() validation for ISO string conversion
+
+### Deployment Support
 - **Dual-Mode Deployment**: Application now supports both Replit and external platforms (Render, etc.)
 - **Object Storage**: Updated to support both Replit sidecar and direct GCS credentials for file uploads
 - **Dual Authentication**: Supports both Replit Auth (on Replit) and username/password (on external platforms)

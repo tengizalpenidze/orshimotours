@@ -18,14 +18,15 @@ export default function Home() {
   const [selectedTour, setSelectedTour] = useState<Tour | null>(null);
   const [showTourDetails, setShowTourDetails] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Fetch tours
-  const { data: tours, isLoading: toursLoading } = useQuery({
+  const { data: tours, isLoading: toursLoading } = useQuery<Tour[]>({
     queryKey: ['/api/tours'],
   });
 
   // Fetch exchange rate
-  const { data: exchangeData } = useQuery({
+  const { data: exchangeData } = useQuery<{ gelToUsd: number }>({
     queryKey: ['/api/exchange-rate'],
   });
 
@@ -34,6 +35,27 @@ export default function Home() {
       setExchangeRate(exchangeData.gelToUsd);
     }
   }, [exchangeData]);
+
+  // Get cover images from tours
+  const coverImages = tours
+    ? tours
+        .filter((tour: Tour) => tour.coverImageUrl)
+        .map((tour: Tour) => tour.coverImageUrl as string)
+    : [];
+
+  // Auto-advance slideshow every 3 seconds
+  useEffect(() => {
+    if (coverImages.length === 0) return;
+    
+    // Only advance if not on the last image
+    if (currentImageIndex < coverImages.length - 1) {
+      const timer = setTimeout(() => {
+        setCurrentImageIndex(prev => prev + 1);
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [currentImageIndex, coverImages.length]);
 
   const handleTourClick = (tour: Tour) => {
     setSelectedTour(tour);
@@ -72,9 +94,36 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="hero-bg min-h-[60vh] flex items-center justify-center relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-accent/70" />
-        <div className="relative text-center text-white px-4 max-w-4xl mx-auto">
+      <section className="min-h-[60vh] flex items-center justify-center relative overflow-hidden">
+        {/* Background Slideshow */}
+        {coverImages.map((imageUrl: string, index: number) => {
+          const isActive = currentImageIndex === index;
+          return (
+            <div
+              key={index}
+              data-slide-index={index}
+              data-active={isActive}
+              className={`absolute inset-0 transition-opacity duration-1000 ${
+                isActive ? 'opacity-100 z-[1]' : 'opacity-0 z-0'
+              }`}
+            >
+              <img
+                src={imageUrl}
+                alt={`Tour background ${index + 1}`}
+                className="w-full h-full object-cover scale-110"
+                style={{
+                  filter: 'blur(4px)',
+                }}
+              />
+            </div>
+          );
+        })}
+        
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/50 to-black/60" style={{ zIndex: 2 }} />
+        
+        {/* Content */}
+        <div className="relative text-center text-white px-4 max-w-4xl mx-auto" style={{ zIndex: 3 }}>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight" data-testid="text-hero-title">
             {t('hero.title')}
           </h1>
